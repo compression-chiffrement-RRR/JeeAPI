@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "security.token.secret",
+      "type": "java.lang.String",
+      "description": "Secret key used to encrypt JWToken."
+    }
+  ]
+}
