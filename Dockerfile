@@ -1,5 +1,5 @@
 FROM openjdk:11.0-jre-slim
-RUN addgroup -S spring && adduser -S spring -G spring
+RUN groupadd spring && useradd spring --groups spring
 USER spring:spring
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
