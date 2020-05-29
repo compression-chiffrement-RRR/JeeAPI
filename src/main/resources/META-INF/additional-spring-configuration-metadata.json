@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "security.token.secret",
+      "type": "java.lang.String",
+      "description": "Secret key used to encrypt JWToken."
+    },
+    {
+      "name": "security.admin.password",
+      "type": "java.lang.String",
+      "description": "User admin password."
+    }
+  ]
+}
