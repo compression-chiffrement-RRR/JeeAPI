@@ -4,11 +4,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 public class AccountDetail implements UserDetails {
-
     private final Account account;
 
     public AccountDetail(Account account) {
@@ -19,6 +17,16 @@ public class AccountDetail implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority("USER"));
+        /*Set<GrantedAuthority> authorities = new HashSet<>();
+
+        if (this.account == null) {
+            return authorities;
+        }
+        List<String> roles = this.account.getRoles();
+        for (String role: roles) {
+            authorities.add(new SimpleGrantedAuthority(role));
+        }
+        return authorities;*/
     }
 
     @Override

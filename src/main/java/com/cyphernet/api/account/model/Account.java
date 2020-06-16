@@ -1,5 +1,6 @@
 package com.cyphernet.api.account.model;
 
+import com.cyphernet.api.storage.model.UserFile;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.GenericGenerator;
@@ -36,6 +37,13 @@ public class Account {
 
     @ElementCollection
     private List<String> roles;
+
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "account"
+    )
+    private List<UserFile> userFiles;
 
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

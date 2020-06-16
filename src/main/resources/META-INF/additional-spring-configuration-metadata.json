@@ -9,6 +9,11 @@
       "name": "security.admin.password",
       "type": "java.lang.String",
       "description": "User admin password."
+    },
+    {
+      "name": "spring.rabbitmq.queue-name",
+      "type": "java.lang.String",
+      "description": "Name of the queue to send event for the workers."
     }
   ]
 }
