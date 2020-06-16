@@ -3,6 +3,7 @@ package com.cyphernet.api.account.service;
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.repository.AccountRepository;
+import com.cyphernet.api.accountRole.model.AccountRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -49,6 +50,30 @@ public class AccountService implements UserDetailsService {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(password));
         return accountRepository.save(user);
+    }
+
+    public Optional<Account> addRole(String uuid, AccountRole role) {
+        Optional<Account> optionalAccount = getAccountByUuid(uuid);
+        if (optionalAccount.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Account user = optionalAccount.get();
+        user.addRole(role);
+
+        return Optional.of(accountRepository.save(user));
+    }
+
+    public Optional<Account> removeRole(String uuid, AccountRole role) {
+        Optional<Account> optionalAccount = getAccountByUuid(uuid);
+        if (optionalAccount.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Account user = optionalAccount.get();
+        user.removeRole(role);
+
+        return Optional.of(accountRepository.save(user));
     }
 
     public Optional<Account> updateAccount(String uuid, String email, String username, String password) {

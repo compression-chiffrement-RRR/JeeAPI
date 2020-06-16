@@ -1,6 +1,8 @@
 package com.cyphernet.api.account.model;
 
 import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.accountRole.model.AccountRole;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.GenericGenerator;
@@ -10,7 +12,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -35,8 +40,14 @@ public class Account {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection
-    private List<String> roles;
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable()
+    private Set<AccountRole> accountRoles = new HashSet<>();
+
+    @JsonBackReference
+    public Set<AccountRole> getAccountRoles(){
+        return this.accountRoles;
+    }
 
     @OneToMany(
             cascade = CascadeType.ALL,
@@ -54,6 +65,20 @@ public class Account {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt;
+
+    public void addRole(AccountRole role) {
+        this.getAccountRoles().add(role);
+        role.getAccounts().add(this);
+    }
+
+    public void removeRole(AccountRole role) {
+        this.getAccountRoles().remove(role);
+        role.getAccounts().remove(this);
+    }
+
+    public List<String> rolesToString(){
+        return this.accountRoles.stream().map(role -> role.getName()).collect(Collectors.toList());
+    }
 
     public AccountDTO toDTO() {
         return new AccountDTO()

@@ -1,9 +1,9 @@
-package com.cyphernet.api.login.model;
+package com.cyphernet.api.auth.model;
 
 import lombok.Data;
 
 @Data
-public class LoginDTO {
+public class AuthRequest {
     private String username;
     private String password;
 }

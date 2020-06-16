@@ -16,17 +16,12 @@ public class AccountDetail implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("USER"));
-        /*Set<GrantedAuthority> authorities = new HashSet<>();
-
-        if (this.account == null) {
-            return authorities;
-        }
-        List<String> roles = this.account.getRoles();
+        Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
+        List<String> roles = this.account.rolesToString();
         for (String role: roles) {
             authorities.add(new SimpleGrantedAuthority(role));
         }
-        return authorities;*/
+        return authorities;
     }
 
     @Override
