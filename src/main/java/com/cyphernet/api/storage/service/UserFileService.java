@@ -47,6 +47,18 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
+    public Optional<UserFile> setUserFileAsTreated(String userFileUuid, String fileUrl) {
+        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
+        if (optionalUserFile.isEmpty()) {
+            return Optional.empty();
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFile.setFileUrl(fileUrl);
+        userFile.setIsTreated(true);
+
+        return Optional.of(userFileRepository.save(userFile));
+    }
+
     public void deleteUserFile(UserFile campus) {
         userFileRepository.delete(campus);
     }
