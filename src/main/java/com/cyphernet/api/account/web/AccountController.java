@@ -36,11 +36,12 @@ public class AccountController {
     }
 
     @GetMapping
-    public List<AccountDTO> getAccounts() {
-        return accountService.getAccounts()
+    public ResponseEntity<List<AccountDTO>> getAccounts() {
+        List<AccountDTO> accounts = accountService.getAccounts()
                 .stream()
                 .map(Account::toDTO)
                 .collect(toList());
+        return ok(accounts);
     }
 
     @PostMapping
@@ -69,4 +70,20 @@ public class AccountController {
 
         return ok().build();
     }
+
+    /*@GetMapping("/{accountUuid}/friends")
+    public ResponseEntity<List<AccountDTO>> getFriends(@PathVariable String accountUuid) {
+        Account account = accountService.getAccountByUuid(accountUuid)
+                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+        List<AccountDTO> friends = account.getFriends().stream().map(Account::toDTO).collect(toList());
+        return ok(friends);
+    }*/
+
+    /*@PostMapping("/{accountUuid}/friends")
+    public ResponseEntity<List<AccountDTO>> addFriend(@PathVariable String accountUuid, @RequestBody AccountDTO accountDTO) {
+        Account account = accountService.getAccountByUuid(accountUuid)
+                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+        List<AccountDTO> friends = account.getFriends().stream().map(Account::toDTO).collect(toList());
+        return ok(friends);
+    }*/
 }

@@ -76,6 +76,20 @@ public class AccountService implements UserDetailsService {
         return Optional.of(accountRepository.save(user));
     }
 
+    /*public Optional<Account> addFriend(String uuid, String uuidFriend) {
+        Optional<Account> optionalAccount = getAccountByUuid(uuid);
+        Optional<Account> optionalAccountFriend = getAccountByUuid(uuid);
+        if (optionalAccount.isEmpty() || optionalAccountFriend.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Account user = optionalAccount.get();
+        Account userFriend = optionalAccountFriend.get();
+        user.getFriends().add(userFriend);
+
+        return Optional.of(accountRepository.save(user));
+    }*/
+
     public Optional<Account> updateAccount(String uuid, String email, String username, String password) {
         Optional<Account> optionalUser = getAccountByUuid(uuid);
         if (optionalUser.isEmpty()) {

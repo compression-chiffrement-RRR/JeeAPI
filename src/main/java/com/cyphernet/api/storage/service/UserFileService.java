@@ -26,6 +26,10 @@ public class UserFileService {
         return userFileRepository.findAll();
     }
 
+    public List<UserFile> getUserFilesOfAccount(String accountUuid) {
+        return userFileRepository.findByAccountUuid(accountUuid);
+    }
+
     public UserFile createUserFile(String name, Account account) {
         UserFile userFile = new UserFile();
         userFile.setFileName(name);
