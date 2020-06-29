@@ -1,13 +1,15 @@
 package com.cyphernet.api.storage;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,8 +18,10 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 
+@Slf4j
 @Service
 public class AmazonClient {
     private AmazonS3 s3client;
@@ -73,6 +77,16 @@ public class AmazonClient {
             throw e;
         }
         return fileUrl;
+    }
+
+    public byte[] download(String key) throws IOException {
+        GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
+
+        S3Object s3Object = s3client.getObject(getObjectRequest);
+
+        S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
+
+        return IOUtils.toByteArray(objectInputStream);
     }
 
     public String deleteFileFromS3Bucket(String fileUrl) {

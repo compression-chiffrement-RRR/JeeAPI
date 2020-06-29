@@ -63,7 +63,12 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
-    public void deleteUserFile(UserFile campus) {
-        userFileRepository.delete(campus);
+    public void deleteUserFile(String userFileUuid) {
+        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
+        if (optionalUserFile.isEmpty()) {
+            return;
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFileRepository.delete(userFile);
     }
 }

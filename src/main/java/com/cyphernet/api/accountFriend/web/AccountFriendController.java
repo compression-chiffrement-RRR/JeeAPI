@@ -52,4 +52,11 @@ public class AccountFriendController {
 
         return ok(accountFriend);
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteFriend(@RequestBody FriendDTO friendDTO) {
+        accountFriendService.deleteFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid());
+
+        return ok().build();
+    }
 }

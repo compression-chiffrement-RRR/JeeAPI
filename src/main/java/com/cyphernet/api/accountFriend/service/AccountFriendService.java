@@ -50,4 +50,15 @@ public class AccountFriendService {
 
         return Optional.of(accountFriendRepository.save(accountFriend));
     }
+
+    public void deleteFriend(String accountUuid, String friendUuid) {
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(accountUuid, friendUuid);
+
+        if (optionalAccountFriend.isEmpty()) {
+            return;
+        }
+
+        AccountFriend accountFriend = optionalAccountFriend.get();
+        accountFriendRepository.delete(accountFriend);
+    }
 }
