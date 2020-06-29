@@ -2,7 +2,6 @@ package com.cyphernet.api.auth.web;
 
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.auth.model.AuthRequest;
-import com.cyphernet.api.auth.model.AuthResponse;
 import com.cyphernet.api.auth.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

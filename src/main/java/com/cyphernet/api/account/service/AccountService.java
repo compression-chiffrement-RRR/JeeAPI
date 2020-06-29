@@ -20,12 +20,14 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
 
     @Autowired
-    AccountService(AccountRepository accountRepository){ this.accountRepository = accountRepository;}
+    AccountService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Account> account = accountRepository.findByUsername(username);
-        if(account.isEmpty()){
+        if (account.isEmpty()) {
             throw new UsernameNotFoundException("account not found");
         }
         return new AccountDetail(account.get());

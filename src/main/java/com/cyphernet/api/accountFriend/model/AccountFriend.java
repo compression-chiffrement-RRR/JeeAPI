@@ -1,9 +1,7 @@
 package com.cyphernet.api.accountFriend.model;
 
 import com.cyphernet.api.account.model.Account;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.CreatedDate;
