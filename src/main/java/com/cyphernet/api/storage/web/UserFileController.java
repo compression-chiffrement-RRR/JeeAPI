@@ -65,6 +65,9 @@ public class UserFileController {
 
     @DeleteMapping("/{fileUuid}")
     public ResponseEntity<Void> deleteFile(@PathVariable String fileUuid) {
+        UserFile userFile = userFileService.getUserFileByUuid(fileUuid)
+                .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
+        amazonClient.deleteFileFromS3Bucket(userFile.getFileUrl());
         userFileService.deleteUserFile(fileUuid);
         return ok().build();
     }
