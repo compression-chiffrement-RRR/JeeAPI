@@ -4,6 +4,9 @@ import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.model.AccountDTO;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.AccountNotFoundException;
+import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.model.UserFileDTO;
+import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.created;
@@ -22,10 +26,12 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("/api/account")
 public class AccountController {
     private final AccountService accountService;
+    private final UserFileService userFileService;
 
     @Autowired
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, UserFileService userFileService) {
         this.accountService = accountService;
+        this.userFileService = userFileService;
     }
 
     @GetMapping("/{accountUuid}")
@@ -42,6 +48,15 @@ public class AccountController {
                 .map(Account::toDTO)
                 .collect(toList());
         return ok(accounts);
+    }
+
+    @GetMapping("/files/{accountUuid}")
+    public ResponseEntity<List<UserFileDTO>> getFiles(@PathVariable String accountUuid) {
+        List<UserFileDTO> userFiles = userFileService.getUserFilesOfAccount(accountUuid)
+                .stream()
+                .map(UserFile::toDTO)
+                .collect(Collectors.toList());
+        return ok(userFiles);
     }
 
     @PostMapping
