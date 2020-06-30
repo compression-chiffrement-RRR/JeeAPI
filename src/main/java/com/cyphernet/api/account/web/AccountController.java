@@ -1,7 +1,6 @@
 package com.cyphernet.api.account.web;
 
-import com.cyphernet.api.account.model.Account;
-import com.cyphernet.api.account.model.AccountDTO;
+import com.cyphernet.api.account.model.*;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.AccountNotFoundException;
 import com.cyphernet.api.storage.model.UserFile;
@@ -15,11 +14,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
-import static org.springframework.http.ResponseEntity.created;
-import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.*;
 
 
 @RestController
@@ -60,8 +59,7 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createAccount(@Valid @RequestBody AccountDTO accountDTO, UriComponentsBuilder uriBuilder) {
-
+    public ResponseEntity<Void> createAccount(@Valid @RequestBody AccountCreationDTO accountDTO, UriComponentsBuilder uriBuilder) {
         Account account = accountService.createAccount(accountDTO.getEmail(), accountDTO.getUsername(), accountDTO.getPassword());
 
         URI uri = uriBuilder.path("/user/{accountUuid}").buildAndExpand(account.getUuid()).toUri();
@@ -70,35 +68,27 @@ public class AccountController {
     }
 
     @PutMapping("/{accountUuid}")
-    public ResponseEntity<AccountDTO> updateAccount(@PathVariable String accountUuid, @Valid @RequestBody AccountDTO accountDTO) {
-        Account account = accountService.updateAccount(accountUuid, accountDTO.getEmail(), accountDTO.getUsername(), accountDTO.getPassword())
+    public ResponseEntity<AccountDTO> updateAccount(@PathVariable String accountUuid, @Valid @RequestBody AccountUpdateDTO accountDTO) {
+        Account account = accountService.updateAccount(accountUuid, accountDTO.getEmail(), accountDTO.getUsername())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
         return ok(account.toDTO());
     }
 
+    @PutMapping("/{accountUuid}")
+    public ResponseEntity<Void> updatePassword(@PathVariable String accountUuid, @RequestBody AccountPasswordDTO accountPasswordDTO) {
+        accountService.updatePassword(accountUuid, accountPasswordDTO.getPassword())
+                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+
+        return noContent().build();
+    }
+
     @DeleteMapping("/{accountUuid}")
-    public ResponseEntity<AccountDTO> deleteAccount(@PathVariable String accountUuid) {
+    public ResponseEntity<Void> deleteAccount(@PathVariable String accountUuid) {
         Account account = accountService.getAccountByUuid(accountUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
 
         accountService.deleteAccount(account);
 
-        return ok().build();
+        return noContent().build();
     }
-
-    /*@GetMapping("/{accountUuid}/friends")
-    public ResponseEntity<List<AccountDTO>> getFriends(@PathVariable String accountUuid) {
-        Account account = accountService.getAccountByUuid(accountUuid)
-                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
-        List<AccountDTO> friends = account.getFriends().stream().map(Account::toDTO).collect(toList());
-        return ok(friends);
-    }*/
-
-    /*@PostMapping("/{accountUuid}/friends")
-    public ResponseEntity<List<AccountDTO>> addFriend(@PathVariable String accountUuid, @RequestBody AccountDTO accountDTO) {
-        Account account = accountService.getAccountByUuid(accountUuid)
-                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
-        List<AccountDTO> friends = account.getFriends().stream().map(Account::toDTO).collect(toList());
-        return ok(friends);
-    }*/
 }

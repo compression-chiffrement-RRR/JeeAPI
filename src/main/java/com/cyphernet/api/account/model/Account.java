@@ -42,19 +42,23 @@ public class Account {
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable
     private Set<AccountRole> accountRoles = new HashSet<>();
+
     @OneToMany(
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             mappedBy = "account"
     )
     private List<UserFile> userFiles;
+
     @ManyToMany
     @JoinTable(name = "account_friends", joinColumns = @JoinColumn(name = "accountUuid"), inverseJoinColumns = @JoinColumn(name = "friendUuid"))
     private List<AccountFriend> accountFriends;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
     private Date createdAt;
+
     @Column(nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
@@ -90,7 +94,6 @@ public class Account {
         return new AccountDTO()
                 .setUuid(this.uuid)
                 .setEmail(this.email)
-                .setUsername(this.username)
-                .setPassword(this.password);
+                .setUsername(this.username);
     }
 }

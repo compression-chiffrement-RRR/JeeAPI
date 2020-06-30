@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.springframework.http.ResponseEntity.noContent;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
@@ -57,6 +58,6 @@ public class AccountFriendController {
     public ResponseEntity<Void> deleteFriend(@RequestBody FriendDTO friendDTO) {
         accountFriendService.deleteFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid());
 
-        return ok().build();
+        return noContent().build();
     }
 }
