@@ -1,7 +1,8 @@
 package com.cyphernet.api.account.model;
 
-import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.accountFriend.model.AccountFriend;
 import com.cyphernet.api.accountRole.model.AccountRole;
+import com.cyphernet.api.storage.model.UserFile;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -9,12 +10,10 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -41,13 +40,8 @@ public class Account {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinTable()
+    @JoinTable
     private Set<AccountRole> accountRoles = new HashSet<>();
-
-    @JsonBackReference
-    public Set<AccountRole> getAccountRoles(){
-        return this.accountRoles;
-    }
 
     @OneToMany(
             cascade = CascadeType.ALL,
@@ -55,6 +49,10 @@ public class Account {
             mappedBy = "account"
     )
     private List<UserFile> userFiles;
+
+    @ManyToMany
+    @JoinTable(name = "account_friends", joinColumns = @JoinColumn(name = "accountUuid"), inverseJoinColumns = @JoinColumn(name = "friendUuid"))
+    private List<AccountFriend> accountFriends;
 
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -66,6 +64,11 @@ public class Account {
     @LastModifiedDate
     private Date updatedAt;
 
+    @JsonBackReference
+    public Set<AccountRole> getAccountRoles() {
+        return this.accountRoles;
+    }
+
     public void addRole(AccountRole role) {
         this.getAccountRoles().add(role);
         role.getAccounts().add(this);
@@ -76,15 +79,21 @@ public class Account {
         role.getAccounts().remove(this);
     }
 
-    public List<String> rolesToString(){
-        return this.accountRoles.stream().map(role -> role.getName()).collect(Collectors.toList());
+    public void addAccountFriends(AccountFriend accountFriend) {
+        if (CollectionUtils.isEmpty(this.accountFriends)) {
+            this.accountFriends = new ArrayList<>();
+        }
+        this.accountFriends.add(accountFriend);
+    }
+
+    public List<String> rolesToString() {
+        return this.accountRoles.stream().map(AccountRole::getName).collect(Collectors.toList());
     }
 
     public AccountDTO toDTO() {
         return new AccountDTO()
                 .setUuid(this.uuid)
                 .setEmail(this.email)
-                .setUsername(this.username)
-                .setPassword(this.password);
+                .setUsername(this.username);
     }
 }

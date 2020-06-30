@@ -20,12 +20,14 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
 
     @Autowired
-    AccountService(AccountRepository accountRepository){ this.accountRepository = accountRepository;}
+    AccountService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Account> account = accountRepository.findByUsername(username);
-        if(account.isEmpty()){
+        if (account.isEmpty()) {
             throw new UsernameNotFoundException("account not found");
         }
         return new AccountDetail(account.get());
@@ -44,12 +46,12 @@ public class AccountService implements UserDetailsService {
     }
 
     public Account createAccount(String email, String username, String password) {
-        Account user = new Account();
-        user.setEmail(email);
-        user.setUsername(username);
+        Account account = new Account();
+        account.setEmail(email);
+        account.setUsername(username);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setPassword(passwordEncoder.encode(password));
-        return accountRepository.save(user);
+        account.setPassword(passwordEncoder.encode(password));
+        return accountRepository.save(account);
     }
 
     public Optional<Account> addRole(String uuid, AccountRole role) {
@@ -58,10 +60,10 @@ public class AccountService implements UserDetailsService {
             return Optional.empty();
         }
 
-        Account user = optionalAccount.get();
-        user.addRole(role);
+        Account account = optionalAccount.get();
+        account.addRole(role);
 
-        return Optional.of(accountRepository.save(user));
+        return Optional.of(accountRepository.save(account));
     }
 
     public Optional<Account> removeRole(String uuid, AccountRole role) {
@@ -70,22 +72,37 @@ public class AccountService implements UserDetailsService {
             return Optional.empty();
         }
 
-        Account user = optionalAccount.get();
-        user.removeRole(role);
+        Account account = optionalAccount.get();
+        account.removeRole(role);
 
-        return Optional.of(accountRepository.save(user));
+        return Optional.of(accountRepository.save(account));
     }
 
-    public Optional<Account> updateAccount(String uuid, String email, String username, String password) {
+    public Optional<Account> updateAccount(String uuid, String email, String username) {
         Optional<Account> optionalUser = getAccountByUuid(uuid);
         if (optionalUser.isEmpty()) {
             return Optional.empty();
         }
-        Account user = optionalUser.get();
-        user.setEmail(email);
-        user.setUsername(username);
-        user.setPassword(password);
-        return Optional.of(accountRepository.save(user));
+        Account account = optionalUser.get();
+        account.setEmail(email);
+        account.setUsername(username);
+        return Optional.of(accountRepository.save(account));
+    }
+
+    public Optional<Account> updatePassword(String accountUuid, String password) {
+        Optional<Account> optionalAccount = this.getAccountByUuid(accountUuid);
+        if (optionalAccount.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Account account = optionalAccount.get();
+
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        account.setPassword(passwordEncoder.encode(password));
+
+        accountRepository.save(account);
+
+        return Optional.of(accountRepository.save(account));
     }
 
     public void deleteAccount(Account account) {

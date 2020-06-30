@@ -9,9 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Accessors(chain = true)
-public class AccountDTO {
-    private String uuid;
-
+public class AccountUpdateDTO {
     @NotNull(message = "Please provide a email")
     @Length(min = 1, message = "Please don't provide a empty email")
     @Email(message = "Your email format is wrong !")

@@ -26,6 +26,10 @@ public class UserFileService {
         return userFileRepository.findAll();
     }
 
+    public List<UserFile> getUserFilesOfAccount(String accountUuid) {
+        return userFileRepository.findByAccountUuid(accountUuid);
+    }
+
     public UserFile createUserFile(String name, Account account) {
         UserFile userFile = new UserFile();
         userFile.setFileName(name);
@@ -59,7 +63,12 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
-    public void deleteUserFile(UserFile campus) {
-        userFileRepository.delete(campus);
+    public void deleteUserFile(String userFileUuid) {
+        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
+        if (optionalUserFile.isEmpty()) {
+            return;
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFileRepository.delete(userFile);
     }
 }
