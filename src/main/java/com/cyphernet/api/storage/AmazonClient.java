@@ -62,7 +62,6 @@ public class AmazonClient {
     }
 
     public String uploadFile(MultipartFile multipartFile) throws IOException {
-
         String fileUrl = "";
         try {
             File file = convertMultiPartToFile(multipartFile);

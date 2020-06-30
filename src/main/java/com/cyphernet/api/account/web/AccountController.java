@@ -74,7 +74,7 @@ public class AccountController {
         return ok(account.toDTO());
     }
 
-    @PutMapping("/{accountUuid}")
+    @PutMapping("/password/{accountUuid}")
     public ResponseEntity<Void> updatePassword(@PathVariable String accountUuid, @RequestBody AccountPasswordDTO accountPasswordDTO) {
         accountService.updatePassword(accountUuid, accountPasswordDTO.getPassword())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
