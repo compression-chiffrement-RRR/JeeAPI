@@ -9,7 +9,12 @@ import com.cyphernet.api.storage.AmazonClient;
 import com.cyphernet.api.storage.model.UserFile;
 import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.service.UserFileService;
+import com.cyphernet.api.worker.model.ProcessFactory;
+import com.cyphernet.api.worker.model.ProcessTaskType;
+import com.cyphernet.api.worker.model.WorkerTaskCreationDTO;
 import com.cyphernet.api.worker.model.WorkerTaskResult;
+import com.cyphernet.api.worker.model.processTypes.Process;
+import com.cyphernet.api.worker.service.WorkerTaskProcessService;
 import com.cyphernet.api.worker.service.WorkerTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.ResponseEntity.accepted;
 import static org.springframework.http.ResponseEntity.ok;
@@ -29,13 +37,15 @@ public class WorkerController {
     private final WorkerTaskService workerTaskService;
     private final UserFileService userFileService;
     private final AccountService accountService;
+    private final WorkerTaskProcessService workerTaskProcessService;
 
     @Autowired
-    public WorkerController(AmazonClient amazonClient, WorkerTaskService workerTaskService, UserFileService userFileService, AccountService accountService) {
+    public WorkerController(AmazonClient amazonClient, WorkerTaskService workerTaskService, UserFileService userFileService, AccountService accountService, WorkerTaskProcessService workerTaskProcessService) {
         this.amazonClient = amazonClient;
         this.workerTaskService = workerTaskService;
         this.userFileService = userFileService;
         this.accountService = accountService;
+        this.workerTaskProcessService = workerTaskProcessService;
     }
 
     @PostMapping("/confirmFileTreatment")
@@ -46,11 +56,20 @@ public class WorkerController {
     }
 
     @PostMapping("/uploadFile")
-    public ResponseEntity<UserFileDTO> uploadFile(@RequestPart(value = "file") MultipartFile file, @RequestPart(value = "accountUuid") String accountUuid) throws FileNotSavedException {
-        Account account = accountService.getAccountByUuid(accountUuid)
-                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+    public ResponseEntity<UserFileDTO> uploadFile(@RequestPart(value = "file") MultipartFile file, @RequestPart(value = "task") WorkerTaskCreationDTO workerTaskCreationDTO) throws FileNotSavedException {
+        Account account = accountService.getAccountByUuid(workerTaskCreationDTO.getAccountUuid())
+                .orElseThrow(() -> new AccountNotFoundException("uuid", workerTaskCreationDTO.getAccountUuid()));
 
-        String fileUrl = "";
+        List<Process> processes = workerTaskCreationDTO.getTypes().stream().map(s -> {
+            try {
+                return ProcessFactory.Create(ProcessTaskType.valueOf(s.getName()), s.getPassword(), this.workerTaskProcessService);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }).collect(Collectors.toList());
+
+        String fileUrl;
         try {
             fileUrl = this.amazonClient.uploadFile(file);
         } catch (IOException e) {
@@ -58,9 +77,9 @@ public class WorkerController {
             throw new FileNotSavedException();
         }
 
-        UserFile userFile = userFileService.createUserFile(file.getOriginalFilename().replace(" ", "_"), account);
+        UserFile userFile = userFileService.createUserFile(Objects.requireNonNull(file.getOriginalFilename()).replace(" ", "_"), account);
 
-        workerTaskService.createAndSendNewWorkerTask("test", fileUrl, userFile.getUuid(), null);
+        workerTaskService.createAndSendNewWorkerTask("test", fileUrl, userFile.getUuid(), processes);
 
         return accepted().body(userFile.toDTO());
     }
