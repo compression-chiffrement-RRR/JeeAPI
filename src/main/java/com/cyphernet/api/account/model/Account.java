@@ -30,7 +30,7 @@ public class Account {
     @Column(updatable = false, nullable = false)
     private String uuid;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)

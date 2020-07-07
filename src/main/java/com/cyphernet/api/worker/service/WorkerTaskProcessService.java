@@ -11,7 +11,7 @@ import java.security.spec.InvalidKeySpecException;
 @Service
 public class WorkerTaskProcessService {
     public byte[] getKey(String password, byte[] salt, Integer length) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray(), salt, 1000, length);
+        PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray(), salt, 1000, length * 8);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         return skf.generateSecret(pbeKeySpec).getEncoded();
     }

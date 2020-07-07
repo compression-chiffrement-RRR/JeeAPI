@@ -10,4 +10,6 @@ public abstract class Process {
     public Process(ProcessTaskType type) {
         this.type = type;
     }
+
+    public abstract ProcessRabbitData toRabbitData();
 }

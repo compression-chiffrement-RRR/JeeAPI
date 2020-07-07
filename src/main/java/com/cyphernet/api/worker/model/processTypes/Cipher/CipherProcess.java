@@ -2,6 +2,7 @@ package com.cyphernet.api.worker.model.processTypes.Cipher;
 
 import com.cyphernet.api.worker.model.ProcessTaskType;
 import com.cyphernet.api.worker.model.processTypes.Process;
+import com.cyphernet.api.worker.model.processTypes.ProcessRabbitData;
 import com.cyphernet.api.worker.service.WorkerTaskProcessService;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +20,11 @@ public abstract class CipherProcess extends Process {
         super(type);
         this.salt = workerTaskProcessService.getSalt();
         this.key = workerTaskProcessService.getKey(password, this.salt, keyLength);
+    }
+
+    public ProcessRabbitData toRabbitData() {
+        return new ProcessRabbitData()
+                .setType(this.getType())
+                .setKey(this.getKey());
     }
 }

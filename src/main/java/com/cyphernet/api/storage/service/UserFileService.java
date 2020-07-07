@@ -2,6 +2,7 @@ package com.cyphernet.api.storage.service;
 
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.model.UserFileProcess;
 import com.cyphernet.api.storage.repository.UserFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,12 +31,24 @@ public class UserFileService {
         return userFileRepository.findByAccountUuid(accountUuid);
     }
 
-    public UserFile createUserFile(String name, Account account) {
+    public UserFile createUserFile(String name, Account account, String fileUrl) {
         UserFile userFile = new UserFile();
         userFile.setFileName(name);
+        userFile.setFileUrl(fileUrl);
         userFile.setAccount(account);
 
         return userFileRepository.save(userFile);
+    }
+
+    public Optional<UserFile> addFileProcess(String userFileUuid, UserFileProcess userFileProcess) {
+        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
+        if (optionalUserFile.isEmpty()) {
+            return Optional.empty();
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFile.addFileProcess(userFileProcess);
+
+        return Optional.of(userFileRepository.save(userFile));
     }
 
     public Optional<UserFile> updateUserFile(String userFileUuid, String name, String fileUrl, Boolean isTreated) {
@@ -51,13 +64,12 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
-    public Optional<UserFile> setUserFileAsTreated(String userFileUuid, String fileUrl) {
+    public Optional<UserFile> setUserFileAsTreated(String userFileUuid) {
         Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
         if (optionalUserFile.isEmpty()) {
             return Optional.empty();
         }
         UserFile userFile = optionalUserFile.get();
-        userFile.setFileUrl(fileUrl);
         userFile.setIsTreated(true);
 
         return Optional.of(userFileRepository.save(userFile));
