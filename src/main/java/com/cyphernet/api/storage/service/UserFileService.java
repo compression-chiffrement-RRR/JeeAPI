@@ -31,10 +31,10 @@ public class UserFileService {
         return userFileRepository.findByAccountUuid(accountUuid);
     }
 
-    public UserFile createUserFile(String name, Account account, String fileUrl) {
+    public UserFile createUserFile(String publicName, String privateName, Account account) {
         UserFile userFile = new UserFile();
-        userFile.setFileName(name);
-        userFile.setFileUrl(fileUrl);
+        userFile.setFileNamePublic(publicName);
+        userFile.setFileNamePrivate(privateName);
         userFile.setAccount(account);
 
         return userFileRepository.save(userFile);
@@ -57,8 +57,7 @@ public class UserFileService {
             return Optional.empty();
         }
         UserFile userFile = optionalUserFile.get();
-        userFile.setFileName(name);
-        userFile.setFileUrl(fileUrl);
+        userFile.setFileNamePublic(name);
         userFile.setIsTreated(isTreated);
 
         return Optional.of(userFileRepository.save(userFile));

@@ -1,5 +1,7 @@
 package com.cyphernet.api.storage;
 
+import com.amazonaws.HttpMethod;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -16,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.UUID;
 
 @Slf4j
@@ -52,20 +55,38 @@ public class AmazonClient {
         return convFile;
     }
 
-    private String generateFileName() {
+    public String generateFileName() {
         return UUID.randomUUID().toString();
     }
 
     private void uploadFileTos3bucket(String fileName, File file) {
         s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
-                .withCannedAcl(CannedAccessControlList.PublicRead));
+                .withCannedAcl(CannedAccessControlList.Private));
     }
 
-    public String uploadFile(MultipartFile multipartFile) throws IOException {
+    public URL getPresignedUrl(String key, HttpMethod method) {
+        try {
+            // Set the pre-signed URL to expire after one day.
+            java.util.Date expiration = new java.util.Date();
+            long expTimeMillis = expiration.getTime();
+            expTimeMillis += 1000 * 60 * 60 * 24;
+            expiration.setTime(expTimeMillis);
+
+            // Generate the pre-signed URL.
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, key)
+                    .withMethod(method)
+                    .withExpiration(expiration);
+            return this.s3client.generatePresignedUrl(generatePresignedUrlRequest);
+        } catch (SdkClientException e) {
+            e.printStackTrace();
+            throw new Error("Could not create url presigned for the file " + key);
+        }
+    }
+
+    public String uploadFile(MultipartFile multipartFile, String fileName) throws IOException {
         String fileUrl = "";
         try {
             File file = convertMultiPartToFile(multipartFile);
-            String fileName = generateFileName();
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
             uploadFileTos3bucket(fileName, file);
             file.delete();
@@ -85,8 +106,7 @@ public class AmazonClient {
         return IOUtils.toByteArray(objectInputStream);
     }
 
-    public String deleteFileFromS3Bucket(String fileUrl) {
-        String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+    public String deleteFileFromS3Bucket(String fileName) {
         s3client.deleteObject(new DeleteObjectRequest(bucketName + "/", fileName));
         return "Successfully deleted";
     }

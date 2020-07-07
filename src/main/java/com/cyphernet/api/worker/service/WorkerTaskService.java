@@ -23,9 +23,9 @@ public class WorkerTaskService {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void createAndSendNewWorkerTask(String responseUrl, String fileUrl, String fileID, List<Process> processes) {
+    public void createAndSendNewWorkerTask(String responseUrl, String fileUrlGET, String fileUrlPUT, String fileID, List<Process> processes) {
         List<ProcessRabbitData> processRabbitData = processes.stream().map(Process::toRabbitData).collect(Collectors.toList());
-        var workerTask = new WorkerTask(fileUrl, responseUrl, fileID, processRabbitData);
+        var workerTask = new WorkerTask(fileUrlGET, fileUrlPUT, responseUrl, fileID, processRabbitData);
         rabbitTemplate.convertAndSend(queueName, workerTask);
     }
 }

@@ -10,8 +10,6 @@ public class UserFileDTO {
 
     private String name;
 
-    private String url;
-
     private Boolean isTreated;
 
     private String creationDate;
