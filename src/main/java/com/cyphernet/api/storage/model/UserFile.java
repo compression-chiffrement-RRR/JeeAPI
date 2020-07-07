@@ -29,10 +29,10 @@ public class UserFile {
     private String uuid;
 
     @Column(nullable = false)
-    private String fileName;
+    private String fileNamePublic;
 
-    @Column
-    private String fileUrl;
+    @Column(nullable = false)
+    private String fileNamePrivate;
 
     @Column(nullable = false)
     private Boolean isTreated = false;
@@ -65,9 +65,8 @@ public class UserFile {
     public UserFileDTO toDTO() {
         return new UserFileDTO()
                 .setUuid(this.uuid)
-                .setName(this.fileName)
+                .setName(this.fileNamePublic)
                 .setIsTreated(this.isTreated)
-                .setUrl(this.fileUrl)
                 .setCreationDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(this.createdAt));
     }
 }

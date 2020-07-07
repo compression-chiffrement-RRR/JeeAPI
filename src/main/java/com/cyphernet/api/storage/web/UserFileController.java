@@ -44,7 +44,7 @@ public class UserFileController {
         byte[] fileBytes;
 
         try {
-            fileBytes = amazonClient.download(fileUuid);
+            fileBytes = amazonClient.download(userFile.getFileNamePrivate());
         } catch (IOException e) {
             e.printStackTrace();
             throw new FileNotRetrieveException();
@@ -52,7 +52,7 @@ public class UserFileController {
 
         final ByteArrayResource resource = new ByteArrayResource(fileBytes);
 
-        String fileName = URLEncoder.encode(userFile.getFileName(), StandardCharsets.UTF_8)
+        String fileName = URLEncoder.encode(userFile.getFileNamePublic(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
 
         return ResponseEntity
@@ -67,7 +67,7 @@ public class UserFileController {
     public ResponseEntity<Void> deleteFile(@PathVariable String fileUuid) {
         UserFile userFile = userFileService.getUserFileByUuid(fileUuid)
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
-        amazonClient.deleteFileFromS3Bucket(userFile.getFileUrl());
+        amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());
         userFileService.deleteUserFile(fileUuid);
         return ok().build();
     }

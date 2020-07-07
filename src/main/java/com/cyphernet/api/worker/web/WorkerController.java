@@ -1,5 +1,6 @@
 package com.cyphernet.api.worker.web;
 
+import com.amazonaws.HttpMethod;
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.AccountNotFoundException;
@@ -85,15 +86,20 @@ public class WorkerController {
             }
         }).collect(Collectors.toList());
 
+        String newFileName = this.amazonClient.generateFileName();
+
         String fileUrl;
         try {
-            fileUrl = this.amazonClient.uploadFile(file);
+            fileUrl = this.amazonClient.uploadFile(file, newFileName);
         } catch (IOException e) {
             e.printStackTrace();
             throw new FileNotSavedException();
         }
 
-        UserFile userFile = userFileService.createUserFile(Objects.requireNonNull(file.getOriginalFilename()).replace(" ", "_"), account, fileUrl);
+        UserFile userFile = userFileService.createUserFile(
+                Objects.requireNonNull(file.getOriginalFilename()).replace(" ", "_"),
+                newFileName,
+                account);
 
         processes.stream()
                 .collect(HashMap<Integer, Process>::new, (h, o) -> h.put(h.size(), o), (h, o) -> {
@@ -115,8 +121,10 @@ public class WorkerController {
                 });
 
         String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment", privateHostname, port);
+        String fileUrlPresignedGet = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.GET).toString();
+        String fileUrlPresignedPut = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.PUT).toString();
 
-        workerTaskService.createAndSendNewWorkerTask(responseUrl, fileUrl, userFile.getUuid(), processes);
+        workerTaskService.createAndSendNewWorkerTask(responseUrl, fileUrlPresignedGet, fileUrlPresignedPut, userFile.getUuid(), processes);
 
         return accepted().body(userFile.toDTO());
     }
