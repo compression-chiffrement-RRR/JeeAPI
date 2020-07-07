@@ -10,7 +10,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -35,6 +37,13 @@ public class UserFile {
     @Column(nullable = false)
     private Boolean isTreated = false;
 
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "userFile"
+    )
+    private List<UserFileProcess> fileProcesses = new ArrayList<>();
+
     @ManyToOne
     private Account account;
 
@@ -47,6 +56,11 @@ public class UserFile {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt;
+
+    public void addFileProcess(UserFileProcess userFileProcess) {
+        this.getFileProcesses().add(userFileProcess);
+        userFileProcess.setUserFile(this);
+    }
 
     public UserFileDTO toDTO() {
         return new UserFileDTO()
