@@ -66,7 +66,6 @@ public class WorkerController {
         this.workerTaskProcessService = workerTaskProcessService;
     }
 
-    @Secured("ROLE_USER")
     @PostMapping("/confirmFileTreatment")
     public ResponseEntity<UserFileDTO> confirmFileTreatment(@RequestBody WorkerTaskResult workerTaskResult) {
         //TODO: handle error

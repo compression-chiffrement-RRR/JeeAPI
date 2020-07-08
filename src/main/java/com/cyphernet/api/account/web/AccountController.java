@@ -2,7 +2,11 @@ package com.cyphernet.api.account.web;
 
 import com.cyphernet.api.account.model.*;
 import com.cyphernet.api.account.service.AccountService;
+import com.cyphernet.api.accountRole.model.AccountRoleType;
+import com.cyphernet.api.accountRole.model.Role;
+import com.cyphernet.api.accountRole.service.AccountRoleService;
 import com.cyphernet.api.exception.AccountNotFoundException;
+import com.cyphernet.api.exception.CreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -24,13 +28,14 @@ import static org.springframework.http.ResponseEntity.*;
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
-    private final AccountService accountService;
-
     private static final Pattern patternUuid = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
+    private final AccountService accountService;
+    private final AccountRoleService accountRoleService;
 
     @Autowired
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, AccountRoleService accountRoleService) {
         this.accountService = accountService;
+        this.accountRoleService = accountRoleService;
     }
 
     @Secured("ROLE_USER")
@@ -71,6 +76,11 @@ public class AccountController {
     @PostMapping
     public ResponseEntity<Void> createAccount(@Valid @RequestBody AccountCreationDTO accountDTO, UriComponentsBuilder uriBuilder) {
         Account account = accountService.createAccount(accountDTO.getEmail(), accountDTO.getUsername(), accountDTO.getPassword());
+
+        Role role = accountRoleService.getAccountRoleByName(AccountRoleType.USER.name())
+                .orElseThrow(CreationException::new);
+
+        accountService.addRole(account.getUuid(), role);
 
         URI uri = uriBuilder.path("/user/{accountUuid}").buildAndExpand(account.getUuid()).toUri();
 

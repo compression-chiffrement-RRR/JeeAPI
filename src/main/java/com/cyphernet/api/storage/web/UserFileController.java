@@ -1,9 +1,7 @@
 package com.cyphernet.api.storage.web;
 
-import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
-import com.cyphernet.api.exception.AccountNotFoundException;
 import com.cyphernet.api.exception.FileNotRetrieveException;
 import com.cyphernet.api.exception.UserFileNotFoundException;
 import com.cyphernet.api.storage.AmazonClient;
@@ -15,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +20,6 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -50,27 +46,14 @@ public class UserFileController {
     }
 
     @Secured("ROLE_USER")
-    @PreAuthorize("#accountUuid == authentication.principal.uuid")
     @GetMapping
     public ResponseEntity<UserFileAccountDTO> getFiles(@AuthenticationPrincipal AccountDetail currentAccount) {
         String accountUuid = currentAccount.getUuid();
 
-        Account account = accountService.getAccountByUuid(accountUuid)
-                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+        List<UserFileDTO> userFileAuthorDTO = accountService.getFilesAuthorDTO(accountUuid);
+        List<UserFileDTO> userFileCollaboratorDTO = accountService.getFilesCollaboratorDTO(accountUuid);
 
-        List<UserFileDTO> userFileAuthorDTOs = account.getUserFiles()
-                .stream()
-                .map(UserFile::toDTO)
-                .collect(Collectors.toList());
-
-        List<UserFileDTO> userFileCollaboratorDTOs = account.getUserFilesCollaborator()
-                .stream()
-                .map(UserFile::toDTO)
-                .collect(Collectors.toList());
-
-        UserFileAccountDTO userFileAccountDTO = new UserFileAccountDTO()
-                .setUserFilesAuthor(userFileAuthorDTOs)
-                .setUserFilesCollaborator(userFileCollaboratorDTOs);
+        UserFileAccountDTO userFileAccountDTO = new UserFileAccountDTO().setUserFilesAuthor(userFileAuthorDTO).setUserFilesCollaborator(userFileCollaboratorDTO);
 
         return ok(userFileAccountDTO);
     }

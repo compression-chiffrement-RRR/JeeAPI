@@ -44,19 +44,17 @@ public class Account {
     private Set<Role> roles = new HashSet<>();
 
     @OneToMany(
-            fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             mappedBy = "account"
     )
-    private List<UserFile> userFiles;
+    private List<UserFile> userFiles = new ArrayList<>();
 
     @ManyToMany(
-            fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             mappedBy = "collaborators"
     )
-    private List<UserFile> userFilesCollaborator;
+    private List<UserFile> userFilesCollaborator = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(name = "account_friends", joinColumns = @JoinColumn(name = "accountUuid"), inverseJoinColumns = @JoinColumn(name = "friendUuid"))

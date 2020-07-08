@@ -4,15 +4,20 @@ import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.repository.AccountRepository;
 import com.cyphernet.api.accountRole.model.Role;
+import com.cyphernet.api.exception.AccountNotFoundException;
+import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.model.UserFileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -76,6 +81,44 @@ public class AccountService implements UserDetailsService {
         account.removeRole(role);
 
         return Optional.of(accountRepository.save(account));
+    }
+
+    @Transactional
+    public List<UserFileDTO> getFilesAuthorDTO(String accountUuid) {
+        return this.getFilesAuthor(accountUuid)
+                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid))
+                .stream()
+                .map(UserFile::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<UserFileDTO> getFilesCollaboratorDTO(String accountUuid) {
+        return this.getFilesCollaborator(accountUuid)
+                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid))
+                .stream()
+                .map(UserFile::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public Optional<List<UserFile>> getFilesAuthor(String accountUuid) {
+        Optional<Account> optionalUser = accountRepository.findByUuid(accountUuid);
+        if (optionalUser.isEmpty()) {
+            return Optional.empty();
+        }
+        Account account = optionalUser.get();
+        return Optional.of(account.getUserFilesCollaborator());
+    }
+
+    @Transactional
+    public Optional<List<UserFile>> getFilesCollaborator(String accountUuid) {
+        Optional<Account> optionalUser = accountRepository.findByUuid(accountUuid);
+        if (optionalUser.isEmpty()) {
+            return Optional.empty();
+        }
+        Account account = optionalUser.get();
+        return Optional.of(account.getUserFilesCollaborator());
     }
 
     public Optional<Account> updateAccount(String uuid, String email, String username) {
