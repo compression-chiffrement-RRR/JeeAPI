@@ -9,8 +9,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class WorkerTask {
-    private String fileUrlGET;
-    private String fileUrlPUT;
+    private String fileUrl;
+    private String uploadUrl;
     private String responseUrl;
     private String fileID;
     private List<ProcessRabbitData> processes;
