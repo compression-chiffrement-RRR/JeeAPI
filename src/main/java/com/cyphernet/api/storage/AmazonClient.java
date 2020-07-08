@@ -106,8 +106,8 @@ public class AmazonClient {
         return IOUtils.toByteArray(objectInputStream);
     }
 
-    public String deleteFileFromS3Bucket(String fileName) {
+    public Boolean deleteFileFromS3Bucket(String fileName) {
         s3client.deleteObject(new DeleteObjectRequest(bucketName + "/", fileName));
-        return "Successfully deleted";
+        return true;
     }
 }

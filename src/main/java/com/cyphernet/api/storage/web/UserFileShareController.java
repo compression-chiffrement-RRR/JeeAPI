@@ -34,6 +34,7 @@ public class UserFileShareController {
     @Secured("ROLE_USER")
     @PostMapping("/{fileUuid}")
     public ResponseEntity<UserFile> addCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+        //TODO: failed to lazily initialize a collection of role: com.cyphernet.api.storage.model.UserFile.collaborators, could not initialize proxy - no Session
         List<Account> collaborators = new ArrayList<>();
 
         fileCollaboratorDTO.getCollaboratorsUuid().forEach(accountUuid -> {

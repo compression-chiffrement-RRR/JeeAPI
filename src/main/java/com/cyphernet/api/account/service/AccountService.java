@@ -108,7 +108,7 @@ public class AccountService implements UserDetailsService {
             return Optional.empty();
         }
         Account account = optionalUser.get();
-        return Optional.of(account.getUserFilesCollaborator());
+        return Optional.of(account.getUserFiles());
     }
 
     @Transactional
