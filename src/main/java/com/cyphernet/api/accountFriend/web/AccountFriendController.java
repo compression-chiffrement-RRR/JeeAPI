@@ -23,7 +23,7 @@ import static org.springframework.http.ResponseEntity.noContent;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
-@RequestMapping("/api/friendship")
+@RequestMapping("/api/friend")
 public class AccountFriendController {
     private final AccountFriendService accountFriendService;
     private final AccountService accountService;

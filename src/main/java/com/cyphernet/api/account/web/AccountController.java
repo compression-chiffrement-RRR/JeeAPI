@@ -3,9 +3,6 @@ package com.cyphernet.api.account.web;
 import com.cyphernet.api.account.model.*;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.AccountNotFoundException;
-import com.cyphernet.api.storage.model.UserFile;
-import com.cyphernet.api.storage.model.UserFileDTO;
-import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -17,7 +14,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.*;
@@ -27,12 +25,12 @@ import static org.springframework.http.ResponseEntity.*;
 @RequestMapping("/api/account")
 public class AccountController {
     private final AccountService accountService;
-    private final UserFileService userFileService;
+
+    private static final Pattern patternUuid = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
 
     @Autowired
-    public AccountController(AccountService accountService, UserFileService userFileService) {
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
-        this.userFileService = userFileService;
     }
 
     @Secured("ROLE_USER")
@@ -45,10 +43,18 @@ public class AccountController {
     }
 
     @Secured("ROLE_USER")
-    @GetMapping("/{accountUuid}")
-    public ResponseEntity<AccountDTO> getUser(@PathVariable String accountUuid) {
-        Account account = accountService.getAccountByUuid(accountUuid)
-                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+    @GetMapping("/{accountUuidOrUsername}")
+    public ResponseEntity<AccountDTO> getUser(@PathVariable String accountUuidOrUsername) {
+        Matcher matcher = patternUuid.matcher(accountUuidOrUsername);
+        Account account;
+        if (matcher.find()) {
+            account = accountService.getAccountByUuid(accountUuidOrUsername)
+                    .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuidOrUsername));
+        } else {
+            account = accountService.getAccountByUsername(accountUuidOrUsername)
+                    .orElseThrow(() -> new AccountNotFoundException("username", accountUuidOrUsername));
+        }
+
         return ok(account.toDTO());
     }
 
@@ -60,17 +66,6 @@ public class AccountController {
                 .map(Account::toDTO)
                 .collect(toList());
         return ok(accounts);
-    }
-
-    @Secured("ROLE_USER")
-    @PreAuthorize("#accountUuid == authentication.principal.uuid")
-    @GetMapping("/files/{accountUuid}")
-    public ResponseEntity<List<UserFileDTO>> getFiles(@PathVariable String accountUuid) {
-        List<UserFileDTO> userFiles = userFileService.getUserFilesOfAccount(accountUuid)
-                .stream()
-                .map(UserFile::toDTO)
-                .collect(Collectors.toList());
-        return ok(userFiles);
     }
 
     @PostMapping

@@ -69,6 +69,7 @@ public class WorkerController {
     @Secured("ROLE_USER")
     @PostMapping("/confirmFileTreatment")
     public ResponseEntity<UserFileDTO> confirmFileTreatment(@RequestBody WorkerTaskResult workerTaskResult) {
+        //TODO: handle error
         UserFile userFile = userFileService.setUserFileAsTreated(workerTaskResult.getFileID())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
         return ok(userFile.toDTO());

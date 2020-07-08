@@ -47,6 +47,10 @@ public class UserFile {
     @ManyToOne
     private Account account;
 
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(name = "file_collaborators", joinColumns = @JoinColumn(name = "fileUuid"), inverseJoinColumns = @JoinColumn(name = "collaboratorUuid"))
+    private List<Account> collaborators;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

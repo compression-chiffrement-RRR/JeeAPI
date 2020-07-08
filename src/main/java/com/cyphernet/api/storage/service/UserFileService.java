@@ -2,7 +2,6 @@ package com.cyphernet.api.storage.service;
 
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.storage.model.UserFile;
-import com.cyphernet.api.storage.model.UserFileProcess;
 import com.cyphernet.api.storage.repository.UserFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +22,10 @@ public class UserFileService {
         return userFileRepository.findById(uuid);
     }
 
+    public Optional<UserFile> getUserFileByUuidAndAccountUuid(String fileUuid, String accountUuid) {
+        return userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
+    }
+
     public List<UserFile> getUserFiles() {
         return userFileRepository.findAll();
     }
@@ -38,17 +41,6 @@ public class UserFileService {
         userFile.setAccount(account);
 
         return userFileRepository.save(userFile);
-    }
-
-    public Optional<UserFile> addFileProcess(String userFileUuid, UserFileProcess userFileProcess) {
-        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
-        if (optionalUserFile.isEmpty()) {
-            return Optional.empty();
-        }
-        UserFile userFile = optionalUserFile.get();
-        userFile.addFileProcess(userFileProcess);
-
-        return Optional.of(userFileRepository.save(userFile));
     }
 
     public Optional<UserFile> updateUserFile(String userFileUuid, String name, String fileUrl, Boolean isTreated) {
@@ -74,6 +66,17 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
+    public Optional<UserFile> addCollaborators(String fileUuid, String accountUuid, List<Account> collaborators) {
+        Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
+        if (optionalUserFile.isEmpty()) {
+            return Optional.empty();
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFile.getCollaborators().addAll(collaborators);
+
+        return Optional.of(userFileRepository.save(userFile));
+    }
+
     public void deleteUserFile(String userFileUuid) {
         Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
         if (optionalUserFile.isEmpty()) {
@@ -81,5 +84,16 @@ public class UserFileService {
         }
         UserFile userFile = optionalUserFile.get();
         userFileRepository.delete(userFile);
+    }
+
+    public Optional<UserFile> removeCollaborators(String fileUuid, String accountUuid, List<Account> collaborators) {
+        Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
+        if (optionalUserFile.isEmpty()) {
+            return Optional.empty();
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFile.getCollaborators().removeAll(collaborators);
+
+        return Optional.of(userFileRepository.save(userFile));
     }
 }
