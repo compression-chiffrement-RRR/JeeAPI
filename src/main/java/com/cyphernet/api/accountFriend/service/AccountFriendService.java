@@ -7,6 +7,7 @@ import com.cyphernet.api.accountFriend.repository.AccountFriendRepository;
 import com.cyphernet.api.exception.AccountNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,7 @@ public class AccountFriendService {
         return accountFriendRepository.findByAccountUuid(account.getUuid());
     }
 
+    @Transactional
     public AccountFriend addFriend(String accountUuid, String friendUuid) {
         Account account = accountService.getAccountByUuid(accountUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
@@ -39,7 +41,7 @@ public class AccountFriendService {
     }
 
     public Optional<AccountFriend> confirmFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(accountUuid, friendUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(friendUuid, accountUuid);
 
         if (optionalAccountFriend.isEmpty()) {
             return Optional.empty();
@@ -55,7 +57,10 @@ public class AccountFriendService {
         Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(accountUuid, friendUuid);
 
         if (optionalAccountFriend.isEmpty()) {
-            return;
+            optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+            if (optionalAccountFriend.isEmpty()) {
+                return;
+            }
         }
 
         AccountFriend accountFriend = optionalAccountFriend.get();

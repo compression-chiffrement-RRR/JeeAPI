@@ -5,10 +5,12 @@ import com.cyphernet.api.account.model.AccountDTO;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.accountFriend.model.AccountFriend;
+import com.cyphernet.api.accountFriend.model.AccountFriendDTO;
 import com.cyphernet.api.accountFriend.model.FriendDTO;
 import com.cyphernet.api.accountFriend.service.AccountFriendService;
 import com.cyphernet.api.exception.AccessDeniedException;
 import com.cyphernet.api.exception.AccountNotFoundException;
+import com.cyphernet.api.exception.PendingInvitationNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -48,25 +50,35 @@ public class AccountFriendController {
 
     @Secured("ROLE_USER")
     @PostMapping
-    public ResponseEntity<AccountFriend> addFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+    public ResponseEntity<AccountFriendDTO> addFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
         if (!currentAccount.getUuid().equals(friendDTO.accountUuid)) {
             throw new AccessDeniedException();
         }
         AccountFriend accountFriend = accountFriendService.addFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid());
 
-        return ok(accountFriend);
+        AccountFriendDTO accountFriendDTO = new AccountFriendDTO()
+                .setAccount(accountFriend.getAccount().toDTO())
+                .setFriend(accountFriend.getFriend().toDTO())
+                .setPending(accountFriend.getPending());
+
+        return ok(accountFriendDTO);
     }
 
     @Secured("ROLE_USER")
     @PostMapping("/confirmFriend")
-    public ResponseEntity<AccountFriend> confirmFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+    public ResponseEntity<AccountFriendDTO> confirmFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
         if (!currentAccount.getUuid().equals(friendDTO.accountUuid)) {
             throw new AccessDeniedException();
         }
         AccountFriend accountFriend = accountFriendService.confirmFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid())
-                .orElseThrow(() -> new AccountNotFoundException("uuid", friendDTO.getFriendUuid()));
+                .orElseThrow(() -> new PendingInvitationNotFoundException("uuid", friendDTO.getFriendUuid()));
 
-        return ok(accountFriend);
+        AccountFriendDTO accountFriendDTO = new AccountFriendDTO()
+                .setAccount(accountFriend.getAccount().toDTO())
+                .setFriend(accountFriend.getFriend().toDTO())
+                .setPending(accountFriend.getPending());
+
+        return ok(accountFriendDTO);
     }
 
     @Secured("ROLE_USER")

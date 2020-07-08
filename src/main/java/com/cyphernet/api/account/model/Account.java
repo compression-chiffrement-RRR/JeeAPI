@@ -48,13 +48,13 @@ public class Account {
             orphanRemoval = true,
             mappedBy = "account"
     )
-    private List<UserFile> userFiles = new ArrayList<>();
+    private List<UserFile> userFiles;
 
     @ManyToMany(
             cascade = CascadeType.ALL,
             mappedBy = "collaborators"
     )
-    private List<UserFile> userFilesCollaborator = new ArrayList<>();
+    private List<UserFile> userFilesCollaborator;
 
     @ManyToMany
     @JoinTable(name = "account_friends", joinColumns = @JoinColumn(name = "accountUuid"), inverseJoinColumns = @JoinColumn(name = "friendUuid"))
