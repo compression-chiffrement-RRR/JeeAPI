@@ -133,7 +133,7 @@ public class WorkerController {
 
     @Secured("ROLE_ADMIN")
     @DeleteMapping("/deleteFile")
-    public String deleteFile(@RequestPart(value = "url") String fileUrl) {
+    public Boolean deleteFile(@RequestPart(value = "url") String fileUrl) {
         return this.amazonClient.deleteFileFromS3Bucket(fileUrl);
     }
 }
