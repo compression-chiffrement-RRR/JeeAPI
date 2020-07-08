@@ -88,9 +88,8 @@ public class WorkerController {
 
         String newFileName = this.amazonClient.generateFileName();
 
-        String fileUrl;
         try {
-            fileUrl = this.amazonClient.uploadFile(file, newFileName);
+            this.amazonClient.uploadFile(file, newFileName);
         } catch (IOException e) {
             e.printStackTrace();
             throw new FileNotSavedException();
