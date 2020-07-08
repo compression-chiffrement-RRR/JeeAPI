@@ -2,13 +2,18 @@ package com.cyphernet.api.accountFriend.web;
 
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.model.AccountDTO;
+import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.accountFriend.model.AccountFriend;
 import com.cyphernet.api.accountFriend.model.FriendDTO;
 import com.cyphernet.api.accountFriend.service.AccountFriendService;
+import com.cyphernet.api.exception.AccessDeniedException;
 import com.cyphernet.api.exception.AccountNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +34,8 @@ public class AccountFriendController {
         this.accountService = accountService;
     }
 
+    @Secured("ROLE_USER")
+    @PreAuthorize("#accountUuid == authentication.principal.uuid")
     @GetMapping("/{accountUuid}")
     public ResponseEntity<List<AccountDTO>> getFriends(@PathVariable String accountUuid) {
         Account account = accountService.getAccountByUuid(accountUuid)
@@ -39,23 +46,35 @@ public class AccountFriendController {
         return ok(friendsDTO);
     }
 
+    @Secured("ROLE_USER")
     @PostMapping
-    public ResponseEntity<AccountFriend> addFriend(@RequestBody FriendDTO friendDTO) {
+    public ResponseEntity<AccountFriend> addFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+        if (!currentAccount.getUuid().equals(friendDTO.accountUuid)) {
+            throw new AccessDeniedException();
+        }
         AccountFriend accountFriend = accountFriendService.addFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid());
 
         return ok(accountFriend);
     }
 
+    @Secured("ROLE_USER")
     @PostMapping("/confirmFriend")
-    public ResponseEntity<AccountFriend> confirmFriend(@RequestBody FriendDTO friendDTO) {
+    public ResponseEntity<AccountFriend> confirmFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+        if (!currentAccount.getUuid().equals(friendDTO.accountUuid)) {
+            throw new AccessDeniedException();
+        }
         AccountFriend accountFriend = accountFriendService.confirmFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", friendDTO.getFriendUuid()));
 
         return ok(accountFriend);
     }
 
+    @Secured("ROLE_USER")
     @DeleteMapping
-    public ResponseEntity<Void> deleteFriend(@RequestBody FriendDTO friendDTO) {
+    public ResponseEntity<Void> deleteFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+        if (!currentAccount.getUuid().equals(friendDTO.accountUuid)) {
+            throw new AccessDeniedException();
+        }
         accountFriendService.deleteFriend(friendDTO.getAccountUuid(), friendDTO.getFriendUuid());
 
         return noContent().build();

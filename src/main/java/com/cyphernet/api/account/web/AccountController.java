@@ -82,6 +82,8 @@ public class AccountController {
         return created(uri).build();
     }
 
+    @Secured("ROLE_USER")
+    @PreAuthorize("#accountUuid == authentication.principal.uuid")
     @PutMapping("/{accountUuid}")
     public ResponseEntity<AccountDTO> updateAccount(@PathVariable String accountUuid, @Valid @RequestBody AccountUpdateDTO accountDTO) {
         Account account = accountService.updateAccount(accountUuid, accountDTO.getEmail(), accountDTO.getUsername())
@@ -89,6 +91,8 @@ public class AccountController {
         return ok(account.toDTO());
     }
 
+    @Secured("ROLE_USER")
+    @PreAuthorize("#accountUuid == authentication.principal.uuid")
     @PutMapping("/password/{accountUuid}")
     public ResponseEntity<Void> updatePassword(@PathVariable String accountUuid, @RequestBody AccountPasswordDTO accountPasswordDTO) {
         accountService.updatePassword(accountUuid, accountPasswordDTO.getPassword())
@@ -97,6 +101,8 @@ public class AccountController {
         return noContent().build();
     }
 
+    @Secured("ROLE_USER")
+    @PreAuthorize("#accountUuid == authentication.principal.uuid")
     @DeleteMapping("/{accountUuid}")
     public ResponseEntity<Void> deleteAccount(@PathVariable String accountUuid) {
         Account account = accountService.getAccountByUuid(accountUuid)

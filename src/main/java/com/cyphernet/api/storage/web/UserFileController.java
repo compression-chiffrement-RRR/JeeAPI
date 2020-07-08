@@ -9,6 +9,7 @@ import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class UserFileController {
         this.amazonClient = amazonClient;
     }
 
+    @Secured("ROLE_USER")
     @GetMapping("/{fileUuid}")
     public ResponseEntity<UserFileDTO> getFiles(@PathVariable String fileUuid) {
         UserFile userFile = userFileService.getUserFileByUuid(fileUuid)
@@ -36,6 +38,7 @@ public class UserFileController {
         return ok(userFile.toDTO());
     }
 
+    @Secured("ROLE_USER")
     @GetMapping("/download/{fileUuid}")
     public ResponseEntity<ByteArrayResource> getDownloadFiles(@PathVariable String fileUuid) throws FileNotRetrieveException {
         UserFile userFile = userFileService.getUserFileByUuid(fileUuid)
@@ -63,6 +66,7 @@ public class UserFileController {
                 .body(resource);
     }
 
+    @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")
     public ResponseEntity<Void> deleteFile(@PathVariable String fileUuid) {
         UserFile userFile = userFileService.getUserFileByUuid(fileUuid)

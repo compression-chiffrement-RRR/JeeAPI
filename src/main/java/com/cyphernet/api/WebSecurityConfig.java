@@ -5,6 +5,7 @@ import com.cyphernet.api.auth.filter.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -44,10 +45,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().
                 authorizeRequests()
-                .antMatchers("/login").permitAll()
-                .antMatchers("/api/**").hasRole("USER")
-                .antMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().permitAll()
+                .antMatchers("/login").anonymous()
+                .antMatchers(HttpMethod.POST, "/api/account").anonymous()
+                .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }

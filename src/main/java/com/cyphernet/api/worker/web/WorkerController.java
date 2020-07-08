@@ -25,6 +25,7 @@ import com.cyphernet.api.worker.service.WorkerTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,6 +66,7 @@ public class WorkerController {
         this.workerTaskProcessService = workerTaskProcessService;
     }
 
+    @Secured("ROLE_USER")
     @PostMapping("/confirmFileTreatment")
     public ResponseEntity<UserFileDTO> confirmFileTreatment(@RequestBody WorkerTaskResult workerTaskResult) {
         UserFile userFile = userFileService.setUserFileAsTreated(workerTaskResult.getFileID())
@@ -72,6 +74,7 @@ public class WorkerController {
         return ok(userFile.toDTO());
     }
 
+    @Secured("ROLE_USER")
     @PostMapping(value = "/uploadFile")
     public ResponseEntity<UserFileDTO> uploadFile(@RequestPart(value = "file") MultipartFile file, @RequestPart(value = "tasks") WorkerTaskCreationDTO workerTaskCreationDTO) throws FileNotSavedException {
         Account account = accountService.getAccountByUuid(workerTaskCreationDTO.getAccountUuid())
@@ -128,6 +131,7 @@ public class WorkerController {
         return accepted().body(userFile.toDTO());
     }
 
+    @Secured("ROLE_ADMIN")
     @DeleteMapping("/deleteFile")
     public String deleteFile(@RequestPart(value = "url") String fileUrl) {
         return this.amazonClient.deleteFileFromS3Bucket(fileUrl);
