@@ -1,12 +1,12 @@
 package com.cyphernet.api.accountRole.repository;
 
-import com.cyphernet.api.accountRole.model.AccountRole;
+import com.cyphernet.api.accountRole.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface AccountRoleRepository extends JpaRepository<AccountRole, Long> {
-    Optional<AccountRole> findByName(String name);
+public interface AccountRoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(String name);
 }

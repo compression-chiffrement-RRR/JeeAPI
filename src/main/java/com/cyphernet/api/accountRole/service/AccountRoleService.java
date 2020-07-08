@@ -1,6 +1,6 @@
 package com.cyphernet.api.accountRole.service;
 
-import com.cyphernet.api.accountRole.model.AccountRole;
+import com.cyphernet.api.accountRole.model.Role;
 import com.cyphernet.api.accountRole.repository.AccountRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,17 +17,17 @@ public class AccountRoleService {
         this.accountRoleRepository = accountRoleRepository;
     }
 
-    public List<AccountRole> getAccountRoles() {
+    public List<Role> getAccountRoles() {
         return accountRoleRepository.findAll();
     }
 
-    public Optional<AccountRole> getAccountRoleByName(String name) {
+    public Optional<Role> getAccountRoleByName(String name) {
         return accountRoleRepository.findByName(name);
     }
 
-    public AccountRole createAccountRole(String name) {
-        AccountRole accountRole = new AccountRole();
-        accountRole.setName(name);
-        return accountRoleRepository.save(accountRole);
+    public Role createAccountRole(String name) {
+        Role role = new Role();
+        role.setName(name);
+        return accountRoleRepository.save(role);
     }
 }

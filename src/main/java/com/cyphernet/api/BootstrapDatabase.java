@@ -2,8 +2,8 @@ package com.cyphernet.api;
 
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.service.AccountService;
-import com.cyphernet.api.accountRole.model.AccountRole;
 import com.cyphernet.api.accountRole.model.AccountRoleType;
+import com.cyphernet.api.accountRole.model.Role;
 import com.cyphernet.api.accountRole.service.AccountRoleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,12 +39,12 @@ class BootstrapDatabase {
         }
 
         if (accountRoleService.getAccountRoleByName(AccountRoleType.ADMIN.name()).isEmpty()) {
-            AccountRole role = accountRoleService.createAccountRole(AccountRoleType.ADMIN.name());
+            Role role = accountRoleService.createAccountRole(AccountRoleType.ADMIN.name());
             accountService.addRole(admin.getUuid(), role);
         }
 
         if (accountRoleService.getAccountRoleByName(AccountRoleType.USER.name()).isEmpty()) {
-            AccountRole role = accountRoleService.createAccountRole(AccountRoleType.USER.name());
+            Role role = accountRoleService.createAccountRole(AccountRoleType.USER.name());
             accountService.addRole(admin.getUuid(), role);
         }
 

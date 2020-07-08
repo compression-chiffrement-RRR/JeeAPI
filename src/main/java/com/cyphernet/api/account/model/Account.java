@@ -1,7 +1,7 @@
 package com.cyphernet.api.account.model;
 
 import com.cyphernet.api.accountFriend.model.AccountFriend;
-import com.cyphernet.api.accountRole.model.AccountRole;
+import com.cyphernet.api.accountRole.model.Role;
 import com.cyphernet.api.storage.model.UserFile;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
@@ -33,15 +33,15 @@ public class Account {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable
-    private Set<AccountRole> accountRoles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(
             cascade = CascadeType.ALL,
@@ -65,17 +65,17 @@ public class Account {
     private Date updatedAt;
 
     @JsonBackReference
-    public Set<AccountRole> getAccountRoles() {
-        return this.accountRoles;
+    public Set<Role> getRoles() {
+        return this.roles;
     }
 
-    public void addRole(AccountRole role) {
-        this.getAccountRoles().add(role);
+    public void addRole(Role role) {
+        this.getRoles().add(role);
         role.getAccounts().add(this);
     }
 
-    public void removeRole(AccountRole role) {
-        this.getAccountRoles().remove(role);
+    public void removeRole(Role role) {
+        this.getRoles().remove(role);
         role.getAccounts().remove(this);
     }
 
@@ -87,7 +87,7 @@ public class Account {
     }
 
     public List<String> rolesToString() {
-        return this.accountRoles.stream().map(AccountRole::getName).collect(Collectors.toList());
+        return this.roles.stream().map(Role::getName).collect(Collectors.toList());
     }
 
     public AccountDTO toDTO() {

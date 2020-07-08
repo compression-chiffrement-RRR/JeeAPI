@@ -14,7 +14,7 @@ import java.util.Set;
 @Data
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class AccountRole {
+public class Role {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -27,7 +27,7 @@ public class AccountRole {
     @Column(nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "accountRoles", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<Account> accounts = new HashSet<>();
 
     @JsonManagedReference
@@ -39,7 +39,7 @@ public class AccountRole {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AccountRole accountRole = (AccountRole) o;
+        Role accountRole = (Role) o;
         return Objects.equals(name, accountRole.name);
     }
 

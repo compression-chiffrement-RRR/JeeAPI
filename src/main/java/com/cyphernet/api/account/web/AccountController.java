@@ -8,6 +8,9 @@ import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,6 +35,16 @@ public class AccountController {
         this.userFileService = userFileService;
     }
 
+    @Secured("ROLE_USER")
+    @GetMapping("/me")
+    public ResponseEntity<AccountDTO> getSelfUser(@AuthenticationPrincipal AccountDetail user) {
+        String accountUuid = user.getUuid();
+        Account account = accountService.getAccountByUuid(accountUuid)
+                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+        return ok(account.toDTO());
+    }
+
+    @Secured("ROLE_USER")
     @GetMapping("/{accountUuid}")
     public ResponseEntity<AccountDTO> getUser(@PathVariable String accountUuid) {
         Account account = accountService.getAccountByUuid(accountUuid)
@@ -39,6 +52,7 @@ public class AccountController {
         return ok(account.toDTO());
     }
 
+    @Secured("ROLE_ADMIN")
     @GetMapping
     public ResponseEntity<List<AccountDTO>> getAccounts() {
         List<AccountDTO> accounts = accountService.getAccounts()
@@ -48,6 +62,8 @@ public class AccountController {
         return ok(accounts);
     }
 
+    @Secured("ROLE_USER")
+    @PreAuthorize("#accountUuid == authentication.principal.uuid")
     @GetMapping("/files/{accountUuid}")
     public ResponseEntity<List<UserFileDTO>> getFiles(@PathVariable String accountUuid) {
         List<UserFileDTO> userFiles = userFileService.getUserFilesOfAccount(accountUuid)

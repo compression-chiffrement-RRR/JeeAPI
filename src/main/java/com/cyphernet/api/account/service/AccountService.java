@@ -3,7 +3,7 @@ package com.cyphernet.api.account.service;
 import com.cyphernet.api.account.model.Account;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.repository.AccountRepository;
-import com.cyphernet.api.accountRole.model.AccountRole;
+import com.cyphernet.api.accountRole.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -54,7 +54,7 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
-    public Optional<Account> addRole(String uuid, AccountRole role) {
+    public Optional<Account> addRole(String uuid, Role role) {
         Optional<Account> optionalAccount = getAccountByUuid(uuid);
         if (optionalAccount.isEmpty()) {
             return Optional.empty();
@@ -66,7 +66,7 @@ public class AccountService implements UserDetailsService {
         return Optional.of(accountRepository.save(account));
     }
 
-    public Optional<Account> removeRole(String uuid, AccountRole role) {
+    public Optional<Account> removeRole(String uuid, Role role) {
         Optional<Account> optionalAccount = getAccountByUuid(uuid);
         if (optionalAccount.isEmpty()) {
             return Optional.empty();

@@ -1,12 +1,12 @@
 package com.cyphernet.api.account.model;
 
+import com.cyphernet.api.accountRole.model.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class AccountDetail implements UserDetails {
@@ -20,11 +20,13 @@ public class AccountDetail implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
-        List<String> roles = this.account.rolesToString();
-        for (String role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role));
-        }
+        Set<Role> roles = this.account.getRoles();
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName())));
         return authorities;
+    }
+
+    public String getUuid() {
+        return account.getUuid();
     }
 
     @Override
