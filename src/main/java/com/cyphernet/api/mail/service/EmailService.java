@@ -26,6 +26,15 @@ public class EmailService {
         return mailMessage;
     }
 
+    public SimpleMailMessage createNewFileAccessGranted(Account account) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(account.getEmail());
+        mailMessage.setSubject("New file access granted!");
+        mailMessage.setFrom(mailFrom);
+        mailMessage.setText("You have been granted access to a new file");
+        return mailMessage;
+    }
+
     public SimpleMailMessage createConfirmTreatmentFileEmail(Account account, UserFile userFile) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(account.getEmail());

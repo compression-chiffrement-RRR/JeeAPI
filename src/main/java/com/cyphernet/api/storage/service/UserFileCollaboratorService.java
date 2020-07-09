@@ -15,10 +15,12 @@ public class UserFileCollaboratorService {
         this.userFileCollaboratorRepository = userFileCollaboratorRepository;
     }
 
-    public void validateCollaborators(ConfirmationCollaboratorToken confirmationCollaboratorToken) {
+    public List<UserFileCollaborator> validateCollaborators(ConfirmationCollaboratorToken confirmationCollaboratorToken) {
         List<UserFileCollaborator> userFileCollaborators = userFileCollaboratorRepository.findAllByConfirmationCollaboratorToken_Uuid(confirmationCollaboratorToken.getUuid());
         userFileCollaborators.forEach(userFileCollaborator -> userFileCollaborator.setPending(false));
 
         userFileCollaboratorRepository.saveAll(userFileCollaborators);
+
+        return userFileCollaborators;
     }
 }
