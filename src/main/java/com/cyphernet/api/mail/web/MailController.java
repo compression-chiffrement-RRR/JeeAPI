@@ -11,6 +11,7 @@ import com.cyphernet.api.storage.service.UserFileCollaboratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +36,7 @@ public class MailController {
     }
 
     @GetMapping("/confirmCollaborator")
+    @Transactional
     public ResponseEntity<?> confirmCollaborator(@RequestParam("token") String token) {
         ConfirmationCollaboratorToken confirmationCollaboratorToken = confirmationCollaboratorTokenService.confirmToken(token)
                 .orElseThrow(() -> new ConfirmationTokenNotFoundException("token", token));
