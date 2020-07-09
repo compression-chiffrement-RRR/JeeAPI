@@ -2,8 +2,8 @@ package com.cyphernet.api.worker.model;
 
 import com.cyphernet.api.worker.model.processTypes.Cipher.*;
 import com.cyphernet.api.worker.model.processTypes.Cipher.IV.*;
-import com.cyphernet.api.worker.model.processTypes.Compress.CompressProcessLZ78;
-import com.cyphernet.api.worker.model.processTypes.Compress.DecompressProcessLZ78;
+import com.cyphernet.api.worker.model.processTypes.Compress.CompressProcessHUFFMAN;
+import com.cyphernet.api.worker.model.processTypes.Compress.DecompressProcessHUFFMAN;
 import com.cyphernet.api.worker.model.processTypes.Process;
 import com.cyphernet.api.worker.service.WorkerTaskProcessService;
 
@@ -34,10 +34,10 @@ public class ProcessFactory {
                 return new CipherProcessDecryptAES192CBC(password, workerTaskProcessService);
             case DECRYPT_AES_256_CBC:
                 return new CipherProcessDecryptAES256CBC(password, workerTaskProcessService);
-            case COMPRESS_LZ78:
-                return new CompressProcessLZ78();
-            case DECOMPRESS_LZ78:
-                return new DecompressProcessLZ78();
+            case COMPRESS_HUFFMAN:
+                return new CompressProcessHUFFMAN();
+            case DECOMPRESS_HUFFMAN:
+                return new DecompressProcessHUFFMAN();
             default:
                 throw new Error("Not implemented process method");
         }
