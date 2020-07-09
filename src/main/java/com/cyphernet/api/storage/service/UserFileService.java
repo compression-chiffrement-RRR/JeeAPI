@@ -51,7 +51,7 @@ public class UserFileService {
     }
 
     public Optional<UserFile> updateUserFile(String userFileUuid, String name, String fileUrl, Boolean isTreated) {
-        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
+        Optional<UserFile> optionalUserFile = userFileRepository.findById(userFileUuid);
         if (optionalUserFile.isEmpty()) {
             return Optional.empty();
         }
@@ -62,13 +62,26 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
-    public Optional<UserFile> setUserFileAsTreated(String userFileUuid) {
-        Optional<UserFile> optionalUserFile = getUserFileByUuid(userFileUuid);
+    public Optional<UserFile> setUserFileAsTreated(String userFileUuid, String token) {
+        Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndConfirmToken(userFileUuid, token);
         if (optionalUserFile.isEmpty()) {
             return Optional.empty();
         }
         UserFile userFile = optionalUserFile.get();
         userFile.setIsTreated(true);
+
+        return Optional.of(userFileRepository.save(userFile));
+    }
+
+    public Optional<UserFile> setUserFileAsError(String userFileUuid, String token, String error) {
+        Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndConfirmToken(userFileUuid, token);
+        if (optionalUserFile.isEmpty()) {
+            return Optional.empty();
+        }
+        UserFile userFile = optionalUserFile.get();
+        userFile.setIsTreated(true);
+        userFile.setIsError(true);
+        userFile.setErrorLog(error);
 
         return Optional.of(userFileRepository.save(userFile));
     }

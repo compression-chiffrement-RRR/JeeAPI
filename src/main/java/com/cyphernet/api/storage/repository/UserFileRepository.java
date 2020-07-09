@@ -12,4 +12,6 @@ public interface UserFileRepository extends JpaRepository<UserFile, String> {
     List<UserFile> findByAccountUuid(String accountUuid);
 
     Optional<UserFile> findByUuidAndAccountUuid(String fileUuid, String accountUuid);
+
+    Optional<UserFile> findByUuidAndConfirmToken(String fileUuid, String confirmToken);
 }

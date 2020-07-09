@@ -31,11 +31,25 @@ public class UserFile {
     @Column(nullable = false)
     private String fileNamePublic;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private String fileNamePrivate;
 
     @Column(nullable = false)
     private Boolean isTreated = false;
+
+    @Column(nullable = false)
+    private Boolean isError = false;
+
+    @Column
+    private String errorLog;
+
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(updatable = false, nullable = false)
+    private String confirmToken;
 
     @OneToMany(
             cascade = CascadeType.ALL,

@@ -67,11 +67,16 @@ public class WorkerController {
     }
 
     @PostMapping("/confirmFileTreatment")
-    public ResponseEntity<UserFileDTO> confirmFileTreatment(@RequestBody WorkerTaskResult workerTaskResult) {
-        //TODO: handle error
-        UserFile userFile = userFileService.setUserFileAsTreated(workerTaskResult.getFileID())
-                .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
-        return ok(userFile.toDTO());
+    public ResponseEntity<?> confirmFileTreatment(@RequestParam("token") String token, @RequestBody WorkerTaskResult workerTaskResult) {
+        if (!workerTaskResult.getError().isEmpty()) {
+            UserFile userFile = userFileService.setUserFileAsError(workerTaskResult.getFileID(), token, workerTaskResult.getError())
+                    .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
+            amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());
+        } else {
+            userFileService.setUserFileAsTreated(workerTaskResult.getFileID(), token)
+                    .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
+        }
+        return ok().build();
     }
 
     @Secured("ROLE_USER")
@@ -122,7 +127,7 @@ public class WorkerController {
                     }
                 });
 
-        String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment", privateHostname, port);
+        String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment?token=%s", privateHostname, port, userFile.getConfirmToken());
         String fileUrlPresignedGet = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.GET).toString();
         String fileUrlPresignedPut = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.PUT).toString();
 
