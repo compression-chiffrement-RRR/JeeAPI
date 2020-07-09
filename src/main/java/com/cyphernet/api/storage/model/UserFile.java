@@ -47,12 +47,8 @@ public class UserFile {
     @ManyToOne
     private Account account;
 
-    @OneToMany(mappedBy = "userFile")
+    @OneToMany(mappedBy = "userFile", cascade = CascadeType.ALL)
     private List<UserFileCollaborator> userFileCollaborator;
-
-    /*@ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "file_collaborators", joinColumns = @JoinColumn(name = "fileUuid"), inverseJoinColumns = @JoinColumn(name = "collaboratorUuid"))
-    private Set<Account> collaborators = new HashSet<>();*/
 
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

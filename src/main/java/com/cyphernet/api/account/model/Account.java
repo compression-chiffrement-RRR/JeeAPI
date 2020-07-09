@@ -2,7 +2,9 @@ package com.cyphernet.api.account.model;
 
 import com.cyphernet.api.accountFriend.model.AccountFriend;
 import com.cyphernet.api.accountRole.model.Role;
+import com.cyphernet.api.mail.model.ConfirmationCollaboratorToken;
 import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.model.UserFileCollaborator;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -48,13 +50,17 @@ public class Account {
             orphanRemoval = true,
             mappedBy = "account"
     )
+    private List<ConfirmationCollaboratorToken> confirmationCollaboratorTokens;
+
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "account"
+    )
     private List<UserFile> userFiles;
 
-    @ManyToMany(
-            cascade = CascadeType.ALL,
-            mappedBy = "collaborators"
-    )
-    private List<UserFile> userFilesCollaborator;
+    @OneToMany(mappedBy = "account")
+    private List<UserFileCollaborator> userFileCollaborator;
 
     @ManyToMany
     @JoinTable(name = "account_friends", joinColumns = @JoinColumn(name = "accountUuid"), inverseJoinColumns = @JoinColumn(name = "friendUuid"))

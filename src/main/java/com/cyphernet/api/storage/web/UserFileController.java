@@ -89,7 +89,6 @@ public class UserFileController {
     @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")
     public ResponseEntity<Void> deleteFile(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
-        //TODO: The request signature we calculated does not match the signature you provided. Check your key and signing method.
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
         amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());

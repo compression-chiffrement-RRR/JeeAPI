@@ -107,7 +107,7 @@ public class AmazonClient {
     }
 
     public Boolean deleteFileFromS3Bucket(String fileName) {
-        s3client.deleteObject(new DeleteObjectRequest(bucketName + "/", fileName));
+        s3client.deleteObject(bucketName, fileName);
         return true;
     }
 }

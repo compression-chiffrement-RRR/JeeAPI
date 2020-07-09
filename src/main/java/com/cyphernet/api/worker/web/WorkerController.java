@@ -130,10 +130,4 @@ public class WorkerController {
 
         return accepted().body(userFile.toDTO());
     }
-
-    @Secured("ROLE_ADMIN")
-    @DeleteMapping("/deleteFile")
-    public Boolean deleteFile(@RequestPart(value = "url") String fileUrl) {
-        return this.amazonClient.deleteFileFromS3Bucket(fileUrl);
-    }
 }
