@@ -7,11 +7,13 @@ import com.cyphernet.api.exception.AccountNotFoundException;
 import com.cyphernet.api.exception.UserFileNotFoundException;
 import com.cyphernet.api.storage.model.UserFile;
 import com.cyphernet.api.storage.model.UserFileCollaboratorDTO;
+import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -33,8 +35,8 @@ public class UserFileShareController {
 
     @Secured("ROLE_USER")
     @PostMapping("/{fileUuid}")
-    public ResponseEntity<UserFile> addCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
-        //TODO: failed to lazily initialize a collection of role: com.cyphernet.api.storage.model.UserFile.collaborators, could not initialize proxy - no Session
+    @Transactional
+    public ResponseEntity<UserFileDTO> addCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
         List<Account> collaborators = new ArrayList<>();
 
         fileCollaboratorDTO.getCollaboratorsUuid().forEach(accountUuid -> {
@@ -46,15 +48,16 @@ public class UserFileShareController {
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        userFile = userFileService.addCollaborators(userFile.getUuid(), currentAccount.getUuid(), collaborators)
+        userFile = userFileService.addCollaborators(userFile, collaborators)
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        return ok(userFile);
+        return ok(userFile.toDTO());
     }
 
     @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")
-    public ResponseEntity<UserFile> removeCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+    @Transactional
+    public ResponseEntity<UserFileDTO> removeCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
         List<Account> collaborators = new ArrayList<>();
 
         fileCollaboratorDTO.getCollaboratorsUuid().forEach(accountUuid -> {
@@ -69,6 +72,6 @@ public class UserFileShareController {
         userFile = userFileService.removeCollaborators(userFile.getUuid(), currentAccount.getUuid(), collaborators)
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        return ok(userFile);
+        return ok(userFile.toDTO());
     }
 }

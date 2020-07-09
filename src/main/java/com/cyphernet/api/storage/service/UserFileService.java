@@ -5,6 +5,7 @@ import com.cyphernet.api.storage.model.UserFile;
 import com.cyphernet.api.storage.repository.UserFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,13 +67,12 @@ public class UserFileService {
         return Optional.of(userFileRepository.save(userFile));
     }
 
-    public Optional<UserFile> addCollaborators(String fileUuid, String accountUuid, List<Account> collaborators) {
-        Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
-        if (optionalUserFile.isEmpty()) {
-            return Optional.empty();
-        }
-        UserFile userFile = optionalUserFile.get();
-        userFile.getCollaborators().addAll(collaborators);
+    @Transactional
+    public Optional<UserFile> addCollaborators(UserFile userFile, List<Account> collaborators) {
+
+        collaborators.forEach(account -> {
+            userFile.getCollaborators().add(account);
+        });
 
         return Optional.of(userFileRepository.save(userFile));
     }
