@@ -14,6 +14,11 @@
       "name": "spring.rabbitmq.queue-name",
       "type": "java.lang.String",
       "description": "Name of the queue to send event for the workers."
+    },
+    {
+      "name": "server.privateHostname",
+      "type": "java.lang.String",
+      "description": "Private hostname used by the workers to access to the API."
     }
   ]
 }

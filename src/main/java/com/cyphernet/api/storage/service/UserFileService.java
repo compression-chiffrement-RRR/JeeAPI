@@ -1,7 +1,10 @@
 package com.cyphernet.api.storage.service;
 
 import com.cyphernet.api.account.model.Account;
+import com.cyphernet.api.mail.model.ConfirmationCollaboratorToken;
 import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.model.UserFileCollaborator;
+import com.cyphernet.api.storage.repository.UserFileCollaboratorRepository;
 import com.cyphernet.api.storage.repository.UserFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,14 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserFileService {
     private final UserFileRepository userFileRepository;
+    private final UserFileCollaboratorRepository userFileCollaboratorRepository;
 
     @Autowired
-    public UserFileService(UserFileRepository userFileRepository) {
+    public UserFileService(UserFileRepository userFileRepository, UserFileCollaboratorRepository userFileCollaboratorRepository) {
         this.userFileRepository = userFileRepository;
+        this.userFileCollaboratorRepository = userFileCollaboratorRepository;
     }
 
     public Optional<UserFile> getUserFileByUuid(String uuid) {
@@ -68,10 +74,15 @@ public class UserFileService {
     }
 
     @Transactional
-    public Optional<UserFile> addCollaborators(UserFile userFile, List<Account> collaborators) {
+    public Optional<UserFile> addCollaborators(UserFile userFile, List<Account> collaborators, ConfirmationCollaboratorToken confirmationCollaboratorToken) {
 
         collaborators.forEach(account -> {
-            userFile.getCollaborators().add(account);
+            UserFileCollaborator userFileCollaborator = new UserFileCollaborator()
+                    .setUserFile(userFile)
+                    .setAccount(account)
+                    .setConfirmationCollaboratorToken(confirmationCollaboratorToken);
+            userFileCollaborator = userFileCollaboratorRepository.save(userFileCollaborator);
+            userFile.getUserFileCollaborator().add(userFileCollaborator);
         });
 
         return Optional.of(userFileRepository.save(userFile));
@@ -86,14 +97,22 @@ public class UserFileService {
         userFileRepository.delete(userFile);
     }
 
+    @Transactional
     public Optional<UserFile> removeCollaborators(String fileUuid, String accountUuid, List<Account> collaborators) {
         Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
         if (optionalUserFile.isEmpty()) {
             return Optional.empty();
         }
         UserFile userFile = optionalUserFile.get();
-        userFile.getCollaborators().removeAll(collaborators);
+        List<UserFileCollaborator> userFileCollaborator = userFile.getUserFileCollaborator();
+        List<UserFileCollaborator> userFileCollaboratorsToRemove = userFileCollaborator
+                .stream()
+                .filter(fileCollaborator ->
+                        collaborators.contains(fileCollaborator.getAccount()))
+                .collect(Collectors.toList());
 
-        return Optional.of(userFileRepository.save(userFile));
+        userFileCollaboratorRepository.deleteAll(userFileCollaboratorsToRemove);
+
+        return Optional.of(userFile);
     }
 }

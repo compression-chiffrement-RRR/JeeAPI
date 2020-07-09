@@ -6,6 +6,7 @@ import com.cyphernet.api.account.repository.AccountRepository;
 import com.cyphernet.api.accountRole.model.Role;
 import com.cyphernet.api.exception.AccountNotFoundException;
 import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.model.UserFileCollaborator;
 import com.cyphernet.api.storage.model.UserFileDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -118,7 +119,12 @@ public class AccountService implements UserDetailsService {
             return Optional.empty();
         }
         Account account = optionalUser.get();
-        return Optional.of(account.getUserFilesCollaborator());
+
+        List<UserFileCollaborator> userFileCollaborator = account.getUserFileCollaborator();
+
+        List<UserFile> userFiles = userFileCollaborator.stream().map(UserFileCollaborator::getUserFile).collect(Collectors.toList());
+
+        return Optional.of(userFiles);
     }
 
     public Optional<Account> updateAccount(String uuid, String email, String username) {

@@ -10,7 +10,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -45,9 +47,12 @@ public class UserFile {
     @ManyToOne
     private Account account;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "userFile")
+    private List<UserFileCollaborator> userFileCollaborator;
+
+    /*@ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "file_collaborators", joinColumns = @JoinColumn(name = "fileUuid"), inverseJoinColumns = @JoinColumn(name = "collaboratorUuid"))
-    private Set<Account> collaborators = new HashSet<>();
+    private Set<Account> collaborators = new HashSet<>();*/
 
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
