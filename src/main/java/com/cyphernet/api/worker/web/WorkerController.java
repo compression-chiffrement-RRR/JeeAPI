@@ -6,6 +6,8 @@ import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.AccountNotFoundException;
 import com.cyphernet.api.exception.FileNotSavedException;
 import com.cyphernet.api.exception.UserFileNotFoundException;
+import com.cyphernet.api.mail.service.EmailSenderService;
+import com.cyphernet.api.mail.service.EmailService;
 import com.cyphernet.api.storage.AmazonClient;
 import com.cyphernet.api.storage.model.UserFile;
 import com.cyphernet.api.storage.model.UserFileDTO;
@@ -25,7 +27,9 @@ import com.cyphernet.api.worker.service.WorkerTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +53,8 @@ public class WorkerController {
     private final UserFileProcessService userFileProcessService;
     private final AccountService accountService;
     private final WorkerTaskProcessService workerTaskProcessService;
+    private final EmailSenderService emailSenderService;
+    private final EmailService emailService;
 
     @Value("${server.port}")
     private Integer port;
@@ -57,24 +63,39 @@ public class WorkerController {
     private String privateHostname;
 
     @Autowired
-    public WorkerController(AmazonClient amazonClient, WorkerTaskService workerTaskService, UserFileService userFileService, UserFileProcessService userFileProcessService, AccountService accountService, WorkerTaskProcessService workerTaskProcessService) {
+    public WorkerController(AmazonClient amazonClient, WorkerTaskService workerTaskService, UserFileService userFileService, UserFileProcessService userFileProcessService, AccountService accountService, WorkerTaskProcessService workerTaskProcessService, EmailSenderService emailSenderService, EmailService emailService) {
         this.amazonClient = amazonClient;
         this.workerTaskService = workerTaskService;
         this.userFileService = userFileService;
         this.userFileProcessService = userFileProcessService;
         this.accountService = accountService;
         this.workerTaskProcessService = workerTaskProcessService;
+        this.emailSenderService = emailSenderService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/confirmFileTreatment")
+    @Transactional
     public ResponseEntity<?> confirmFileTreatment(@RequestParam("token") String token, @RequestBody WorkerTaskResult workerTaskResult) {
         if (!workerTaskResult.getError().isEmpty()) {
             UserFile userFile = userFileService.setUserFileAsError(workerTaskResult.getFileID(), token, workerTaskResult.getError())
                     .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
             amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());
+
+            Account account = userFile.getAccount();
+
+            SimpleMailMessage errorMail = emailService.createErrorTreatmentFileEmail(account, userFile);
+
+            emailSenderService.sendEmail(errorMail);
         } else {
-            userFileService.setUserFileAsTreated(workerTaskResult.getFileID(), token)
+            UserFile userFile = userFileService.setUserFileAsTreated(workerTaskResult.getFileID(), token)
                     .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
+
+            Account account = userFile.getAccount();
+
+            SimpleMailMessage confirmationMail = emailService.createConfirmTreatmentFileEmail(account, userFile);
+
+            emailSenderService.sendEmail(confirmationMail);
         }
         return ok().build();
     }
