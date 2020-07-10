@@ -7,6 +7,7 @@ import com.cyphernet.api.accountRole.model.Role;
 import com.cyphernet.api.accountRole.service.AccountRoleService;
 import com.cyphernet.api.exception.AccountNotFoundException;
 import com.cyphernet.api.exception.CreationException;
+import com.cyphernet.api.exception.MissingParamException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -18,8 +19,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.*;
@@ -28,7 +27,6 @@ import static org.springframework.http.ResponseEntity.*;
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
-    private static final Pattern patternUuid = Pattern.compile("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
     private final AccountService accountService;
     private final AccountRoleService accountRoleService;
 
@@ -48,23 +46,24 @@ public class AccountController {
     }
 
     @Secured("ROLE_USER")
-    @GetMapping("/{accountUuidOrUsername}")
-    public ResponseEntity<AccountDTO> getUser(@PathVariable String accountUuidOrUsername) {
-        Matcher matcher = patternUuid.matcher(accountUuidOrUsername);
+    @GetMapping
+    public ResponseEntity<AccountDTO> getUser(@RequestParam(value = "username", required = false) String username, @RequestParam(value = "uuid", required = false) String uuid) {
         Account account;
-        if (matcher.find()) {
-            account = accountService.getAccountByUuid(accountUuidOrUsername)
-                    .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuidOrUsername));
+        if (uuid != null) {
+            account = accountService.getAccountByUuid(uuid)
+                    .orElseThrow(() -> new AccountNotFoundException("uuid", uuid));
+        } else if (username != null) {
+            account = accountService.getAccountByUsername(username)
+                    .orElseThrow(() -> new AccountNotFoundException("username", username));
         } else {
-            account = accountService.getAccountByUsername(accountUuidOrUsername)
-                    .orElseThrow(() -> new AccountNotFoundException("username", accountUuidOrUsername));
+            throw new MissingParamException();
         }
 
         return ok(account.toDTO());
     }
 
     @Secured("ROLE_ADMIN")
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<AccountDTO>> getAccounts() {
         List<AccountDTO> accounts = accountService.getAccounts()
                 .stream()

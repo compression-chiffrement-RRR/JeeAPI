@@ -24,8 +24,12 @@ public class AccountFriendService {
         this.accountService = accountService;
     }
 
-    public List<AccountFriend> getFriends(Account account) {
-        return accountFriendRepository.findByAccountUuid(account.getUuid());
+    public List<AccountFriend> getNotPendingFriends(Account account) {
+        return accountFriendRepository.findByAccountUuidAndPending(account.getUuid(), false);
+    }
+
+    public List<AccountFriend> getPendingFriendsRequest(Account account) {
+        return accountFriendRepository.findByFriendUuidAndPending(account.getUuid(), true);
     }
 
     @Transactional

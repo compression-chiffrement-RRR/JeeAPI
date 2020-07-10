@@ -1,5 +1,6 @@
 package com.cyphernet.api.storage.web;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
@@ -106,7 +107,11 @@ public class UserFileController {
     public ResponseEntity<Void> deleteFile(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
-        amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());
+        try {
+            amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());
+        } catch (SdkClientException e) {
+            e.printStackTrace();
+        }
         userFileService.deleteUserFile(fileUuid);
         return ok().build();
     }
