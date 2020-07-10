@@ -81,7 +81,7 @@ public class AccountController {
 
         accountService.addRole(account.getUuid(), role);
 
-        URI uri = uriBuilder.path("/user/{accountUuid}").buildAndExpand(account.getUuid()).toUri();
+        URI uri = uriBuilder.path("/api/account?uuid={accountUuid}").buildAndExpand(account.getUuid()).toUri();
 
         return created(uri).build();
     }
