@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -43,11 +44,12 @@ public class UserFile {
     @Column
     private String errorLog;
 
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @Column(nullable = false)
+    private Boolean isTemporary = false;
+
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
+
     @Column(updatable = false, nullable = false)
     private String confirmToken;
 
@@ -84,6 +86,15 @@ public class UserFile {
                 .setUuid(this.uuid)
                 .setName(this.fileNamePublic)
                 .setIsTreated(this.isTreated)
+                .setCreationDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(this.createdAt));
+    }
+
+    public UserFileInformationDTO toInformationDTO() {
+        return new UserFileInformationDTO()
+                .setUuid(this.uuid)
+                .setName(this.fileNamePublic)
+                .setIsTreated(this.isTreated)
+                .setProcesses(this.getFileProcesses().stream().map(UserFileProcess::toDTO).collect(Collectors.toList()))
                 .setCreationDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(this.createdAt));
     }
 }

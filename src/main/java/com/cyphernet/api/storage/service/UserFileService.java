@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,10 +43,24 @@ public class UserFileService {
     }
 
     public UserFile createUserFile(String publicName, String privateName, Account account) {
+        UUID confirmToken = UUID.randomUUID();
         UserFile userFile = new UserFile();
         userFile.setFileNamePublic(publicName);
         userFile.setFileNamePrivate(privateName);
         userFile.setAccount(account);
+        userFile.setConfirmToken(confirmToken.toString());
+
+        return userFileRepository.save(userFile);
+    }
+
+    public UserFile createUserFileTemp(String publicName, String privateName, Account account) {
+        UUID confirmToken = UUID.randomUUID();
+        UserFile userFile = new UserFile();
+        userFile.setFileNamePublic(publicName);
+        userFile.setFileNamePrivate(privateName);
+        userFile.setAccount(account);
+        userFile.setConfirmToken(confirmToken.toString());
+        userFile.setIsTemporary(true);
 
         return userFileRepository.save(userFile);
     }

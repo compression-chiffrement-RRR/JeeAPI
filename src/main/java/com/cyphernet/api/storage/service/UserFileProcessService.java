@@ -27,6 +27,10 @@ public class UserFileProcessService {
         return userFileProcessRepository.findAll();
     }
 
+    public List<UserFileProcess> getUserFileProcess(UserFile userFile) {
+        return userFile.getFileProcesses();
+    }
+
     public UserFileProcess createUserFileProcess(ProcessTaskType processTaskType, Integer order, byte[] salt, byte[] iv, UserFile userFile) {
         UserFileProcess userFileProcess = new UserFileProcess();
         userFileProcess.setProcessTaskType(processTaskType);

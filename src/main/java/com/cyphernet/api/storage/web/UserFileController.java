@@ -8,12 +8,16 @@ import com.cyphernet.api.storage.AmazonClient;
 import com.cyphernet.api.storage.model.UserFile;
 import com.cyphernet.api.storage.model.UserFileAccountDTO;
 import com.cyphernet.api.storage.model.UserFileDTO;
+import com.cyphernet.api.storage.model.UserFileInformationDTO;
+import com.cyphernet.api.storage.service.UserFileProcessService;
 import com.cyphernet.api.storage.service.UserFileService;
+import com.cyphernet.api.worker.service.WorkerTaskProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -27,22 +31,27 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("/api/file")
 public class UserFileController {
     private final UserFileService userFileService;
+    private final UserFileProcessService userFileProcessService;
     private final AccountService accountService;
     private final AmazonClient amazonClient;
+    private final WorkerTaskProcessService workerTaskProcessService;
 
     @Autowired
-    public UserFileController(UserFileService userFileService, AccountService accountService, AmazonClient amazonClient) {
+    public UserFileController(UserFileService userFileService, UserFileProcessService userFileProcessService, AccountService accountService, AmazonClient amazonClient, WorkerTaskProcessService workerTaskProcessService) {
         this.userFileService = userFileService;
+        this.userFileProcessService = userFileProcessService;
         this.accountService = accountService;
         this.amazonClient = amazonClient;
+        this.workerTaskProcessService = workerTaskProcessService;
     }
 
     @Secured("ROLE_USER")
     @GetMapping("/{fileUuid}")
-    public ResponseEntity<UserFileDTO> getFile(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
+    @Transactional
+    public ResponseEntity<UserFileInformationDTO> getFile(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
-        return ok(userFile.toDTO());
+        return ok(userFile.toInformationDTO());
     }
 
     @Secured("ROLE_USER")
@@ -59,8 +68,8 @@ public class UserFileController {
     }
 
     @Secured("ROLE_USER")
-    @GetMapping("/download/{fileUuid}")
-    public ResponseEntity<ByteArrayResource> getDownloadFiles(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException {
+    @GetMapping("/download/{fileUuid}/processed")
+    public ResponseEntity<ByteArrayResource> getDownloadFilesProcessed(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException {
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
@@ -85,6 +94,60 @@ public class UserFileController {
                 .header("Content-disposition", "attachment; filename=\"" + fileName + "\"")
                 .body(resource);
     }
+
+    /*@Secured("ROLE_USER")
+    @PostMapping("/download/{fileUuid}/unprocessed")
+    public ResponseEntity<ByteArrayResource> getDownloadFilesUnprocessed(@PathVariable String fileUuid, @RequestBody UserFileUnprocessDTO userFileUnprocessDTO, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException, MissingPasswordException {
+        UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
+                .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
+
+        List<UserFileProcess> userFileProcessList = userFileProcessService.getUserFileProcess(userFile);
+
+        for (UserFileProcess fileProcess : userFileProcessList) {
+            Optional<UnprocessInformationDTO> first = Arrays.stream(userFileUnprocessDTO.getTypes())
+                    .filter(unprocessInformationDTO ->
+                            unprocessInformationDTO.getOrderProcess().equals(fileProcess.getProcessOrder()))
+                    .findFirst();
+            if (fileProcess.getSalt() != null && first.isEmpty()) {
+                throw new MissingPasswordException();
+            }
+        }
+
+        List<Unprocess> processes = userFileProcessList.stream().map(userFileProcess -> {
+            Optional<UnprocessInformationDTO> unprocessInformationOptional = Arrays.stream(userFileUnprocessDTO.getTypes())
+                    .filter(unprocessInformationDTO ->
+                            unprocessInformationDTO.getOrderProcess().equals(userFileProcess.getProcessOrder()))
+                    .findFirst();
+            UnprocessInformationDTO unprocessInformationDTO = unprocessInformationOptional.get();
+            try {
+                return UnprocessFactory.Create(userFileProcess.getProcessTaskType(), unprocessInformationDTO.getPassword(), userFileProcess.getSalt(), userFileProcess.getIv(), this.workerTaskProcessService);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }).collect(Collectors.toList());
+
+        byte[] fileBytes;
+
+        try {
+            fileBytes = amazonClient.download(userFile.getFileNamePrivate());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new FileNotRetrieveException();
+        }
+
+        final ByteArrayResource resource = new ByteArrayResource(fileBytes);
+
+        String fileName = URLEncoder.encode(userFile.getFileNamePublic(), StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+
+        return ResponseEntity
+                .ok()
+                .contentLength(fileBytes.length)
+                .header("Content-type", "application/octet-stream")
+                .header("Content-disposition", "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
+    }*/
 
     @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")

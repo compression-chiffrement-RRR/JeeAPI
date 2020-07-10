@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class WorkerTask {
+public class WorkerTaskProcess {
     private String fileUrl;
     private String uploadUrl;
     private String responseUrl;

@@ -16,7 +16,7 @@ import java.util.Date;
 @Entity
 @Accessors(chain = true)
 @EntityListeners(AuditingEntityListener.class)
-public class UserFileProcess {
+public class UserFileProcess implements Comparable<UserFileProcess> {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -53,10 +53,18 @@ public class UserFileProcess {
     @LastModifiedDate
     private Date updatedAt;
 
-    private UserFileProcessDTO toDTO() {
+    public UserFileProcessDTO toDTO() {
         return new UserFileProcessDTO()
                 .setUuid(this.uuid)
                 .setProcessTaskType(this.processTaskType)
                 .setOrder(this.processOrder);
+    }
+
+    @Override
+    public int compareTo(UserFileProcess u) {
+        if (getProcessOrder() == null || u.getProcessOrder() == null) {
+            return 0;
+        }
+        return getProcessOrder().compareTo(u.getProcessOrder());
     }
 }
