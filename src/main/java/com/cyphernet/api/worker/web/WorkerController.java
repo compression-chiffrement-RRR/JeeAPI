@@ -214,6 +214,7 @@ public class WorkerController {
         UserFile userFileTemp = userFileService.createUserFileTemp(
                 userFile.getFileNamePublic(),
                 newFileName,
+                userFile.getUuid(),
                 account);
 
         String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment?token=%s", privateHostname, port, userFileTemp.getConfirmToken());

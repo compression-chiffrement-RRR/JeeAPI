@@ -8,6 +8,8 @@ import lombok.experimental.Accessors;
 public class UserFileDTO {
     private String uuid;
 
+    private String uuidParent;
+
     private String name;
 
     private Boolean isTreated;

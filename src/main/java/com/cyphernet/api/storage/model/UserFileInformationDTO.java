@@ -10,6 +10,8 @@ import java.util.List;
 public class UserFileInformationDTO {
     private String uuid;
 
+    private String uuidParent;
+
     private String name;
 
     private Boolean isTreated;

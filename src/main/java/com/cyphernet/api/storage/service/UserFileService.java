@@ -53,7 +53,7 @@ public class UserFileService {
         return userFileRepository.save(userFile);
     }
 
-    public UserFile createUserFileTemp(String publicName, String privateName, Account account) {
+    public UserFile createUserFileTemp(String publicName, String privateName, String parentUuid, Account account) {
         UUID confirmToken = UUID.randomUUID();
         UserFile userFile = new UserFile();
         userFile.setFileNamePublic(publicName);
@@ -61,6 +61,7 @@ public class UserFileService {
         userFile.setAccount(account);
         userFile.setConfirmToken(confirmToken.toString());
         userFile.setIsTemporary(true);
+        userFile.setUuidParent(parentUuid);
 
         return userFileRepository.save(userFile);
     }
