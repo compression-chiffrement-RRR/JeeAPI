@@ -14,6 +14,10 @@ public class UserFileInformationDTO {
 
     private Boolean isTreated;
 
+    private Boolean isError;
+
+    private Boolean isTemporary;
+
     private List<UserFileProcessDTO> processes;
 
     private String creationDate;

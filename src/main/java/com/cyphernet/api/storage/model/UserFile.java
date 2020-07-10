@@ -47,9 +47,6 @@ public class UserFile {
     @Column(nullable = false)
     private Boolean isTemporary = false;
 
-    @Column(nullable = false)
-    private Boolean isDeleted = false;
-
     @Column(updatable = false, nullable = false)
     private String confirmToken;
 
@@ -86,6 +83,8 @@ public class UserFile {
                 .setUuid(this.uuid)
                 .setName(this.fileNamePublic)
                 .setIsTreated(this.isTreated)
+                .setIsTemporary(this.isTemporary)
+                .setIsError(this.isError)
                 .setCreationDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(this.createdAt));
     }
 
@@ -94,6 +93,8 @@ public class UserFile {
                 .setUuid(this.uuid)
                 .setName(this.fileNamePublic)
                 .setIsTreated(this.isTreated)
+                .setIsTemporary(this.isTemporary)
+                .setIsError(this.isError)
                 .setProcesses(this.getFileProcesses().stream().map(UserFileProcess::toDTO).collect(Collectors.toList()))
                 .setCreationDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(this.createdAt));
     }

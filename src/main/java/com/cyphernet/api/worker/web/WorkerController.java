@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -162,12 +163,19 @@ public class WorkerController {
     @Secured("ROLE_USER")
     @PostMapping("/retrieveFile/{fileUuid}")
     @Transactional
-    public ResponseEntity<UserFileDTO> retrieveFile(@PathVariable String fileUuid, @RequestBody UserFileUnprocessDTO userFileUnprocessDTO, @AuthenticationPrincipal AccountDetail currentAccount) throws MissingPasswordException {
+    public ResponseEntity<UserFileDTO> retrieveFile(@PathVariable String fileUuid, @RequestBody UserFileUnprocessDTO userFileUnprocessDTO, @AuthenticationPrincipal AccountDetail currentAccount) throws MissingPasswordException, FileNotTreatedException, FileNotFoundException {
         Account account = accountService.getAccountByUuid(currentAccount.getUuid())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", currentAccount.getUuid()));
 
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
+
+        if (userFile.getIsTemporary()) {
+            throw new UserFileNotFoundException("uuid", fileUuid);
+        }
+        if (!userFile.getIsTreated()) {
+            throw new FileNotTreatedException();
+        }
 
         String newFileName = this.amazonClient.generateFileName();
 

@@ -12,5 +12,9 @@ public class UserFileDTO {
 
     private Boolean isTreated;
 
+    private Boolean isError;
+
+    private Boolean isTemporary;
+
     private String creationDate;
 }

@@ -1,8 +1,10 @@
 package com.cyphernet.api.storage.web;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.FileNotRetrieveException;
+import com.cyphernet.api.exception.FileNotTreatedException;
 import com.cyphernet.api.exception.UserFileNotFoundException;
 import com.cyphernet.api.storage.AmazonClient;
 import com.cyphernet.api.storage.model.UserFile;
@@ -68,16 +70,20 @@ public class UserFileController {
     }
 
     @Secured("ROLE_USER")
-    @GetMapping("/download/{fileUuid}/processed")
-    public ResponseEntity<ByteArrayResource> getDownloadFilesProcessed(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException {
+    @GetMapping("/download/{fileUuid}")
+    public ResponseEntity<ByteArrayResource> getDownloadFilesProcessed(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException, FileNotTreatedException {
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
+
+        if (!userFile.getIsTreated()) {
+            throw new FileNotTreatedException();
+        }
 
         byte[] fileBytes;
 
         try {
             fileBytes = amazonClient.download(userFile.getFileNamePrivate());
-        } catch (IOException e) {
+        } catch (IOException | AmazonS3Exception e) {
             e.printStackTrace();
             throw new FileNotRetrieveException();
         }
@@ -94,60 +100,6 @@ public class UserFileController {
                 .header("Content-disposition", "attachment; filename=\"" + fileName + "\"")
                 .body(resource);
     }
-
-    /*@Secured("ROLE_USER")
-    @PostMapping("/download/{fileUuid}/unprocessed")
-    public ResponseEntity<ByteArrayResource> getDownloadFilesUnprocessed(@PathVariable String fileUuid, @RequestBody UserFileUnprocessDTO userFileUnprocessDTO, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException, MissingPasswordException {
-        UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
-                .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
-
-        List<UserFileProcess> userFileProcessList = userFileProcessService.getUserFileProcess(userFile);
-
-        for (UserFileProcess fileProcess : userFileProcessList) {
-            Optional<UnprocessInformationDTO> first = Arrays.stream(userFileUnprocessDTO.getTypes())
-                    .filter(unprocessInformationDTO ->
-                            unprocessInformationDTO.getOrderProcess().equals(fileProcess.getProcessOrder()))
-                    .findFirst();
-            if (fileProcess.getSalt() != null && first.isEmpty()) {
-                throw new MissingPasswordException();
-            }
-        }
-
-        List<Unprocess> processes = userFileProcessList.stream().map(userFileProcess -> {
-            Optional<UnprocessInformationDTO> unprocessInformationOptional = Arrays.stream(userFileUnprocessDTO.getTypes())
-                    .filter(unprocessInformationDTO ->
-                            unprocessInformationDTO.getOrderProcess().equals(userFileProcess.getProcessOrder()))
-                    .findFirst();
-            UnprocessInformationDTO unprocessInformationDTO = unprocessInformationOptional.get();
-            try {
-                return UnprocessFactory.Create(userFileProcess.getProcessTaskType(), unprocessInformationDTO.getPassword(), userFileProcess.getSalt(), userFileProcess.getIv(), this.workerTaskProcessService);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }).collect(Collectors.toList());
-
-        byte[] fileBytes;
-
-        try {
-            fileBytes = amazonClient.download(userFile.getFileNamePrivate());
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new FileNotRetrieveException();
-        }
-
-        final ByteArrayResource resource = new ByteArrayResource(fileBytes);
-
-        String fileName = URLEncoder.encode(userFile.getFileNamePublic(), StandardCharsets.UTF_8)
-                .replaceAll("\\+", "%20");
-
-        return ResponseEntity
-                .ok()
-                .contentLength(fileBytes.length)
-                .header("Content-type", "application/octet-stream")
-                .header("Content-disposition", "attachment; filename=\"" + fileName + "\"")
-                .body(resource);
-    }*/
 
     @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")
