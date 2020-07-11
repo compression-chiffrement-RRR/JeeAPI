@@ -25,7 +25,7 @@ public class AccountFriendService {
     }
 
     public List<AccountFriend> getNotPendingFriends(Account account) {
-        return accountFriendRepository.findByAccountUuidAndPendingAndIgnore(account.getUuid(), false, false);
+        return accountFriendRepository.findByAccountUuidOrFriendUuidAndPendingAndIgnore(account.getUuid(), false, false);
     }
 
     public List<AccountFriend> getPendingFriendsRequest(Account account) {
@@ -45,7 +45,7 @@ public class AccountFriendService {
     }
 
     public Optional<AccountFriend> confirmFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
 
         if (optionalAccountFriend.isEmpty()) {
             return Optional.empty();
@@ -58,7 +58,7 @@ public class AccountFriendService {
     }
 
     public Optional<AccountFriend> ignoreFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
 
         if (optionalAccountFriend.isEmpty()) {
             return Optional.empty();
@@ -71,10 +71,10 @@ public class AccountFriendService {
     }
 
     public void deleteFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(accountUuid, friendUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(accountUuid, friendUuid);
 
         if (optionalAccountFriend.isEmpty()) {
-            optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+            optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
             if (optionalAccountFriend.isEmpty()) {
                 return;
             }
