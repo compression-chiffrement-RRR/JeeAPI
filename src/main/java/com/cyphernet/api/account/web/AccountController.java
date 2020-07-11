@@ -11,7 +11,6 @@ import com.cyphernet.api.exception.MissingParamException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -38,8 +37,8 @@ public class AccountController {
 
     @Secured("ROLE_USER")
     @GetMapping("/me")
-    public ResponseEntity<AccountDTO> getSelfUser(@AuthenticationPrincipal AccountDetail user) {
-        String accountUuid = user.getUuid();
+    public ResponseEntity<AccountDTO> getSelfUser(@AuthenticationPrincipal AccountDetail userLogged) {
+        String accountUuid = userLogged.getUuid();
         Account account = accountService.getAccountByUuid(accountUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
         return ok(account.toDTO());
@@ -88,8 +87,8 @@ public class AccountController {
 
     @Secured("ROLE_USER")
     @PutMapping
-    public ResponseEntity<AccountDTO> updateAccount(@Valid @RequestBody AccountUpdateDTO accountDTO, @AuthenticationPrincipal AccountDetail account) {
-        String accountUuid = account.getUuid();
+    public ResponseEntity<AccountDTO> updateAccount(@Valid @RequestBody AccountUpdateDTO accountDTO, @AuthenticationPrincipal AccountDetail userLogged) {
+        String accountUuid = userLogged.getUuid();
         Account accountUpdated = accountService.updateAccount(accountUuid, accountDTO.getEmail(), accountDTO.getUsername())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
         return ok(accountUpdated.toDTO());
@@ -97,8 +96,8 @@ public class AccountController {
 
     @Secured("ROLE_USER")
     @PutMapping("/password")
-    public ResponseEntity<Void> updatePassword(@RequestBody AccountPasswordDTO accountPasswordDTO, @AuthenticationPrincipal AccountDetail account) {
-        String accountUuid = account.getUuid();
+    public ResponseEntity<Void> updatePassword(@RequestBody AccountPasswordDTO accountPasswordDTO, @AuthenticationPrincipal AccountDetail userLogged) {
+        String accountUuid = userLogged.getUuid();
         accountService.updatePassword(accountUuid, accountPasswordDTO.getPassword())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
 
@@ -106,9 +105,9 @@ public class AccountController {
     }
 
     @Secured("ROLE_USER")
-    @PreAuthorize("#accountUuid == authentication.principal.uuid")
-    @DeleteMapping("/{accountUuid}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable String accountUuid) {
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal AccountDetail userLogged) {
+        String accountUuid = userLogged.getUuid();
         Account account = accountService.getAccountByUuid(accountUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
 
