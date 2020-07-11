@@ -87,18 +87,18 @@ public class AccountController {
     }
 
     @Secured("ROLE_USER")
-    @PreAuthorize("#accountUuid == authentication.principal.uuid")
-    @PutMapping("/{accountUuid}")
-    public ResponseEntity<AccountDTO> updateAccount(@PathVariable String accountUuid, @Valid @RequestBody AccountUpdateDTO accountDTO) {
-        Account account = accountService.updateAccount(accountUuid, accountDTO.getEmail(), accountDTO.getUsername())
+    @PutMapping
+    public ResponseEntity<AccountDTO> updateAccount(@Valid @RequestBody AccountUpdateDTO accountDTO, @AuthenticationPrincipal AccountDetail account) {
+        String accountUuid = account.getUuid();
+        Account accountUpdated = accountService.updateAccount(accountUuid, accountDTO.getEmail(), accountDTO.getUsername())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
-        return ok(account.toDTO());
+        return ok(accountUpdated.toDTO());
     }
 
     @Secured("ROLE_USER")
-    @PreAuthorize("#accountUuid == authentication.principal.uuid")
-    @PutMapping("/password/{accountUuid}")
-    public ResponseEntity<Void> updatePassword(@PathVariable String accountUuid, @RequestBody AccountPasswordDTO accountPasswordDTO) {
+    @PutMapping("/password")
+    public ResponseEntity<Void> updatePassword(@RequestBody AccountPasswordDTO accountPasswordDTO, @AuthenticationPrincipal AccountDetail account) {
+        String accountUuid = account.getUuid();
         accountService.updatePassword(accountUuid, accountPasswordDTO.getPassword())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
 
