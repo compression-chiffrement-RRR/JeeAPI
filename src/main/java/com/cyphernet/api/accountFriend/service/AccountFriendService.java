@@ -38,6 +38,10 @@ public class AccountFriendService {
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
         Account friend = accountService.getAccountByUuid(friendUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+        if (optionalAccountFriend.isPresent()) {
+            return optionalAccountFriend.get();
+        }
         AccountFriend accountFriend = new AccountFriend()
                 .setAccount(account)
                 .setFriend(friend);
