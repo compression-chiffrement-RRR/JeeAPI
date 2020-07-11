@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.springframework.http.ResponseEntity.noContent;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
@@ -77,16 +78,16 @@ public class UserFileShareController {
     @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")
     @Transactional
-    public ResponseEntity<UserFileDTO> removeCollaborators(@PathVariable String fileUuid, @RequestParam("collaboratorUuid") String collaboratorUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
+    public ResponseEntity<Void> removeCollaborators(@PathVariable String fileUuid, @RequestParam("collaboratorUuid") String collaboratorUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
         Account collaborator = accountService.getAccountByUuid(collaboratorUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", collaboratorUuid));
 
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        userFile = userFileService.removeCollaborator(userFile.getUuid(), currentAccount.getUuid(), collaborator)
+        userFileService.removeCollaborator(userFile.getUuid(), currentAccount.getUuid(), collaborator)
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        return ok(userFile.toDTO());
+        return noContent().build();
     }
 }
