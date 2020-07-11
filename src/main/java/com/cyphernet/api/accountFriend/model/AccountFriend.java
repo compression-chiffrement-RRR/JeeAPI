@@ -33,6 +33,9 @@ public class AccountFriend {
     @Column
     private Boolean pending = true;
 
+    @Column
+    private Boolean ignore = false;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

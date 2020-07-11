@@ -9,9 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface AccountFriendRepository extends JpaRepository<AccountFriend, Long> {
-    List<AccountFriend> findByAccountUuidAndPending(String uuid, Boolean pending);
+    List<AccountFriend> findByAccountUuidAndPendingAndIgnore(String uuid, Boolean pending, Boolean ignore);
 
-    List<AccountFriend> findByFriendUuidAndPending(String uuid, Boolean pending);
+    List<AccountFriend> findByFriendUuidAndPendingAndIgnore(String uuid, Boolean pending, Boolean ignore);
 
     Optional<AccountFriend> findByAccountUuidAndFriendUuid(String accountUuid, String friendUuid);
 }

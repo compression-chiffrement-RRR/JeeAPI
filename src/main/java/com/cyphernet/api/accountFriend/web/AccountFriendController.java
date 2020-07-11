@@ -84,6 +84,21 @@ public class AccountFriendController {
     }
 
     @Secured("ROLE_USER")
+    @PostMapping("/ignoreFriend")
+    public ResponseEntity<AccountFriendDTO> ignoreFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+        AccountFriend accountFriend = accountFriendService.ignoreFriend(currentAccount.getUuid(), friendDTO.getFriendUuid())
+                .orElseThrow(() -> new PendingInvitationNotFoundException("uuid", friendDTO.getFriendUuid()));
+
+        AccountFriendDTO accountFriendDTO = new AccountFriendDTO()
+                .setAccount(accountFriend.getAccount().toDTO())
+                .setFriend(accountFriend.getFriend().toDTO())
+                .setPending(accountFriend.getPending())
+                .setIgnore(accountFriend.getIgnore());
+
+        return ok(accountFriendDTO);
+    }
+
+    @Secured("ROLE_USER")
     @DeleteMapping
     public ResponseEntity<Void> deleteFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
         accountFriendService.deleteFriend(currentAccount.getUuid(), friendDTO.getFriendUuid());

@@ -25,11 +25,11 @@ public class AccountFriendService {
     }
 
     public List<AccountFriend> getNotPendingFriends(Account account) {
-        return accountFriendRepository.findByAccountUuidAndPending(account.getUuid(), false);
+        return accountFriendRepository.findByAccountUuidAndPendingAndIgnore(account.getUuid(), false, false);
     }
 
     public List<AccountFriend> getPendingFriendsRequest(Account account) {
-        return accountFriendRepository.findByFriendUuidAndPending(account.getUuid(), true);
+        return accountFriendRepository.findByFriendUuidAndPendingAndIgnore(account.getUuid(), true, false);
     }
 
     @Transactional
@@ -53,6 +53,19 @@ public class AccountFriendService {
 
         AccountFriend accountFriend = optionalAccountFriend.get();
         accountFriend.setPending(false);
+
+        return Optional.of(accountFriendRepository.save(accountFriend));
+    }
+
+    public Optional<AccountFriend> ignoreFriend(String accountUuid, String friendUuid) {
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+
+        if (optionalAccountFriend.isEmpty()) {
+            return Optional.empty();
+        }
+
+        AccountFriend accountFriend = optionalAccountFriend.get();
+        accountFriend.setIgnore(true);
 
         return Optional.of(accountFriendRepository.save(accountFriend));
     }

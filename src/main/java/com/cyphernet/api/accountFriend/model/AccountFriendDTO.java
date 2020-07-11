@@ -14,4 +14,6 @@ public class AccountFriendDTO {
     AccountDTO friend;
 
     boolean pending;
+
+    boolean ignore;
 }
