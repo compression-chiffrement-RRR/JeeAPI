@@ -77,19 +77,14 @@ public class UserFileShareController {
     @Secured("ROLE_USER")
     @DeleteMapping("/{fileUuid}")
     @Transactional
-    public ResponseEntity<UserFileDTO> removeCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
-        List<Account> collaborators = new ArrayList<>();
-
-        fileCollaboratorDTO.getCollaboratorsUuid().forEach(accountUuid -> {
-            Account account = accountService.getAccountByUuid(accountUuid)
-                    .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
-            collaborators.add(account);
-        });
+    public ResponseEntity<UserFileDTO> removeCollaborators(@PathVariable String fileUuid, @RequestParam("collaboratorUuid") String collaboratorUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
+        Account collaborator = accountService.getAccountByUuid(collaboratorUuid)
+                .orElseThrow(() -> new AccountNotFoundException("uuid", collaboratorUuid));
 
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        userFile = userFileService.removeCollaborators(userFile.getUuid(), currentAccount.getUuid(), collaborators)
+        userFile = userFileService.removeCollaborator(userFile.getUuid(), currentAccount.getUuid(), collaborator)
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
         return ok(userFile.toDTO());

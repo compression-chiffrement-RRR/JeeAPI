@@ -28,6 +28,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static org.springframework.http.ResponseEntity.noContent;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
@@ -113,6 +114,6 @@ public class UserFileController {
             e.printStackTrace();
         }
         userFileService.deleteUserFile(fileUuid);
-        return ok().build();
+        return noContent().build();
     }
 }

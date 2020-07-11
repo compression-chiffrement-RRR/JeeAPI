@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class UserFileService {
@@ -127,20 +126,23 @@ public class UserFileService {
     }
 
     @Transactional
-    public Optional<UserFile> removeCollaborators(String fileUuid, String accountUuid, List<Account> collaborators) {
+    public Optional<UserFile> removeCollaborator(String fileUuid, String accountUuid, Account collaborator) {
         Optional<UserFile> optionalUserFile = userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
         if (optionalUserFile.isEmpty()) {
             return Optional.empty();
         }
         UserFile userFile = optionalUserFile.get();
         List<UserFileCollaborator> userFileCollaborator = userFile.getUserFileCollaborator();
-        List<UserFileCollaborator> userFileCollaboratorsToRemove = userFileCollaborator
+        Optional<UserFileCollaborator> userFileCollaboratorsToRemove = userFileCollaborator
                 .stream()
-                .filter(fileCollaborator ->
-                        collaborators.contains(fileCollaborator.getAccount()))
-                .collect(Collectors.toList());
+                .filter(fileCollaborator -> fileCollaborator.getAccount() == collaborator)
+                .findFirst();
 
-        userFileCollaboratorRepository.deleteAll(userFileCollaboratorsToRemove);
+        if (userFileCollaboratorsToRemove.isEmpty()) {
+            return Optional.empty();
+        }
+
+        userFileCollaboratorRepository.delete(userFileCollaboratorsToRemove.get());
 
         return Optional.of(userFile);
     }

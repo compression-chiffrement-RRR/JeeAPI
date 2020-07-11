@@ -100,8 +100,8 @@ public class AccountFriendController {
 
     @Secured("ROLE_USER")
     @DeleteMapping
-    public ResponseEntity<Void> deleteFriend(@RequestBody FriendDTO friendDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
-        accountFriendService.deleteFriend(currentAccount.getUuid(), friendDTO.getFriendUuid());
+    public ResponseEntity<Void> deleteFriend(@RequestParam("friendUuid") String friendUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
+        accountFriendService.deleteFriend(currentAccount.getUuid(), friendUuid);
 
         return noContent().build();
     }
