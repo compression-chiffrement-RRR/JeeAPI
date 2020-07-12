@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Data
@@ -50,4 +51,12 @@ public class UserFileCollaborator {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updatedAt;
+
+    public UserFileCollaboratorDTO toDTO() {
+        return new UserFileCollaboratorDTO()
+                .setUserFileUuid(this.userFile.getUuid())
+                .setAccount(this.account.toDTO())
+                .setPending(this.pending)
+                .setCreationDate(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(this.createdAt));
+    }
 }

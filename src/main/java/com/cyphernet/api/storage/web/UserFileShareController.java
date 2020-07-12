@@ -9,9 +9,7 @@ import com.cyphernet.api.mail.model.ConfirmationCollaboratorToken;
 import com.cyphernet.api.mail.service.ConfirmationCollaboratorTokenService;
 import com.cyphernet.api.mail.service.EmailSenderService;
 import com.cyphernet.api.mail.service.EmailService;
-import com.cyphernet.api.storage.model.UserFile;
-import com.cyphernet.api.storage.model.UserFileCollaboratorDTO;
-import com.cyphernet.api.storage.model.UserFileDTO;
+import com.cyphernet.api.storage.model.*;
 import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.ResponseEntity.noContent;
 import static org.springframework.http.ResponseEntity.ok;
@@ -46,9 +45,24 @@ public class UserFileShareController {
     }
 
     @Secured("ROLE_USER")
+    @GetMapping("/{fileUuid}")
+    @Transactional
+    public ResponseEntity<List<UserFileCollaboratorDTO>> getCollaborators(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
+        UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
+                .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
+
+        List<UserFileCollaboratorDTO> fileCollaboratorDTOS = userFile.getUserFileCollaborator()
+                .stream()
+                .map(UserFileCollaborator::toDTO)
+                .collect(Collectors.toList());
+
+        return ok(fileCollaboratorDTOS);
+    }
+
+    @Secured("ROLE_USER")
     @PostMapping("/{fileUuid}")
     @Transactional
-    public ResponseEntity<UserFileDTO> addCollaborators(@PathVariable String fileUuid, @RequestBody UserFileCollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
+    public ResponseEntity<UserFileDTO> addCollaborators(@PathVariable String fileUuid, @RequestBody CollaboratorDTO fileCollaboratorDTO, @AuthenticationPrincipal AccountDetail currentAccount) {
         List<Account> collaborators = new ArrayList<>();
 
         Account accountUserLogged = accountService.getAccountByUuid(currentAccount.getUuid())
