@@ -54,8 +54,8 @@ public class WorkerController {
     private final EmailSenderService emailSenderService;
     private final EmailService emailService;
 
-    @Value("${server.port}")
-    private Integer port;
+    @Value("${server.exposedPort}")
+    private Integer exposedPort;
 
     @Value("${server.privateHostname}")
     private String privateHostname;
@@ -151,7 +151,7 @@ public class WorkerController {
                     }
                 });
 
-        String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment?token=%s", privateHostname, port, userFile.getConfirmToken());
+        String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment?token=%s", privateHostname, exposedPort, userFile.getConfirmToken());
         String fileUrlPresignedGet = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.GET).toString();
         String fileUrlPresignedPut = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.PUT).toString();
 
@@ -217,7 +217,7 @@ public class WorkerController {
                 userFile.getUuid(),
                 account);
 
-        String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment?token=%s", privateHostname, port, userFileTemp.getConfirmToken());
+        String responseUrl = String.format("http://%s:%d/api/worker/confirmFileTreatment?token=%s", privateHostname, exposedPort, userFileTemp.getConfirmToken());
         String fileUrlPresignedGet = this.amazonClient.getPresignedUrl(userFile.getFileNamePrivate(), HttpMethod.GET).toString();
         String fileUrlPresignedPut = this.amazonClient.getPresignedUrl(newFileName, HttpMethod.PUT).toString();
 
