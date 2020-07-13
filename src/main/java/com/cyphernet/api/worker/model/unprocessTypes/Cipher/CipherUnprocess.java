@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.stream.IntStream;
 
 @Getter
 @Setter
@@ -23,8 +24,9 @@ public abstract class CipherUnprocess extends Unprocess {
     }
 
     public UnprocessRabbitData toRabbitData() {
+        int[] intKeyArray = IntStream.range(0, getKey().length).map(i -> getKey()[i]).toArray();
         return new UnprocessRabbitData()
                 .setType(this.getType())
-                .setKey(this.getKey());
+                .setKey(intKeyArray);
     }
 }
