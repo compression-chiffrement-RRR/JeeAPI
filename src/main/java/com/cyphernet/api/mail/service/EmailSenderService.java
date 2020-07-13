@@ -18,7 +18,6 @@ public class EmailSenderService {
 
     @Async
     public void sendEmail(SimpleMailMessage email) {
-        //javaMailSender.send(email);
-        System.out.println(email.toString());
+        javaMailSender.send(email);
     }
 }
