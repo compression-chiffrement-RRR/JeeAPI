@@ -75,7 +75,7 @@ public class WorkerController {
     @PostMapping("/confirmFileTreatment")
     @Transactional
     public ResponseEntity<?> confirmFileTreatment(@RequestParam("token") String token, @RequestBody WorkerTaskResult workerTaskResult) {
-        if (!workerTaskResult.getError().isEmpty()) {
+        if (workerTaskResult.getError() != null && !workerTaskResult.getError().isEmpty()) {
             UserFile userFile = userFileService.setUserFileAsError(workerTaskResult.getFileID(), token, workerTaskResult.getError())
                     .orElseThrow(() -> new UserFileNotFoundException("uuid", workerTaskResult.getFileID()));
             amazonClient.deleteFileFromS3Bucket(userFile.getFileNamePrivate());
