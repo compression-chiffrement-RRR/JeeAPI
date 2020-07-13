@@ -10,6 +10,6 @@ import lombok.experimental.Accessors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProcessRabbitData {
     private ProcessTaskType type;
-    private byte[] key;
-    private byte[] iv;
+    private int[] key;
+    private int[] iv;
 }
