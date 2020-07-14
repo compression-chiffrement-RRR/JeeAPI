@@ -40,7 +40,12 @@ public class AccountFriendController {
         Account account = accountService.getAccountByUuid(currentAccount.getUuid())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", currentAccount.getUuid()));
         List<AccountFriend> friends = accountFriendService.getNotPendingFriends(account);
-        List<AccountDTO> friendsDTO = friends.stream().map(accountFriend -> accountFriend.getFriend().toDTO()).collect(Collectors.toList());
+        List<AccountDTO> friendsDTO = friends.stream().map(accountFriend -> {
+            if (accountFriend.getFriend().getUuid().equals(account.getUuid())) {
+                return accountFriend.getAccount().toDTO();
+            }
+            return accountFriend.getFriend().toDTO();
+        }).collect(Collectors.toList());
 
         return ok(friendsDTO);
     }
