@@ -23,7 +23,7 @@ public abstract class CipherUnprocessWithIV extends CipherUnprocess {
 
     public UnprocessRabbitData toRabbitData() {
         int[] intKeyArray = IntStream.range(0, getKey().length).map(i -> getKey()[i]).toArray();
-        int[] intIVArray = IntStream.range(0, getKey().length).map(i -> getKey()[i]).toArray();
+        int[] intIVArray = IntStream.range(0, getIv().length).map(i -> getIv()[i]).toArray();
         return new UnprocessRabbitData()
                 .setType(this.getType())
                 .setKey(intKeyArray)

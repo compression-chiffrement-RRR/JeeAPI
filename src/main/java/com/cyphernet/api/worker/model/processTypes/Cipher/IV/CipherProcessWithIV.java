@@ -23,7 +23,7 @@ public abstract class CipherProcessWithIV extends CipherProcess {
 
     public ProcessRabbitData toRabbitData() {
         int[] intKeyArray = IntStream.range(0, getKey().length).map(i -> getKey()[i]).toArray();
-        int[] intIVArray = IntStream.range(0, getKey().length).map(i -> getKey()[i]).toArray();
+        int[] intIVArray = IntStream.range(0, getIv().length).map(i -> getIv()[i]).toArray();
         return new ProcessRabbitData()
                 .setType(this.getType())
                 .setKey(intKeyArray)
