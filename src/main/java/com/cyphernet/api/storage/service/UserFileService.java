@@ -135,7 +135,7 @@ public class UserFileService {
         List<UserFileCollaborator> userFileCollaborator = userFile.getUserFileCollaborator();
         Optional<UserFileCollaborator> userFileCollaboratorsToRemove = userFileCollaborator
                 .stream()
-                .filter(fileCollaborator -> fileCollaborator.getAccount() == collaborator)
+                .filter(fileCollaborator -> fileCollaborator.getAccount().getUuid().equals(collaborator.getUuid()))
                 .findFirst();
 
         if (userFileCollaboratorsToRemove.isEmpty()) {
