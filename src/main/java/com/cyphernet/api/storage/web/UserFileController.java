@@ -2,6 +2,7 @@ package com.cyphernet.api.storage.web;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.FileNotRetrieveException;
@@ -14,13 +15,15 @@ import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.model.UserFileInformationDTO;
 import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -67,7 +70,7 @@ public class UserFileController {
 
     @Secured("ROLE_USER")
     @GetMapping("/download/{fileUuid}")
-    public ResponseEntity<ByteArrayResource> getDownloadFilesProcessed(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException, FileNotTreatedException {
+    public void getDownloadFilesProcessed(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount, HttpServletResponse response) throws FileNotRetrieveException, FileNotTreatedException, IOException {
         UserFile userFile = userFileService.getUserFileSharedOrOwned(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
@@ -75,26 +78,22 @@ public class UserFileController {
             throw new FileNotTreatedException();
         }
 
-        byte[] fileBytes;
+        S3ObjectInputStream inputStream;
 
         try {
-            fileBytes = amazonClient.download(userFile.getFileNamePrivate());
+            inputStream = amazonClient.download(userFile.getFileNamePrivate());
         } catch (IOException | AmazonS3Exception e) {
             e.printStackTrace();
             throw new FileNotRetrieveException();
         }
 
-        final ByteArrayResource resource = new ByteArrayResource(fileBytes);
-
         String fileName = URLEncoder.encode(userFile.getFileNamePublic(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
 
-        return ResponseEntity
-                .ok()
-                .contentLength(fileBytes.length)
-                .header("Content-type", "application/octet-stream")
-                .header("Content-disposition", "attachment; filename=\"" + fileName + "\"")
-                .body(resource);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", fileName));
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
+        inputStream.transferTo(response.getOutputStream());
     }
 
     @Secured("ROLE_USER")

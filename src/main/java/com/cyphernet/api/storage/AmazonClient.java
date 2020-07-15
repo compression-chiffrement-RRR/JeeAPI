@@ -8,7 +8,6 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
-import com.amazonaws.util.IOUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -86,14 +85,12 @@ public class AmazonClient {
         return fileUrl;
     }
 
-    public byte[] download(String key) throws IOException {
+    public S3ObjectInputStream download(String key) throws IOException {
         GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
 
         S3Object s3Object = s3client.getObject(getObjectRequest);
 
-        S3ObjectInputStream objectInputStream = s3Object.getObjectContent();
-
-        return IOUtils.toByteArray(objectInputStream);
+        return s3Object.getObjectContent();
     }
 
     public void deleteFileFromS3Bucket(String fileName) throws SdkClientException {
