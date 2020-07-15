@@ -71,20 +71,25 @@ public class UserFileShareController {
         fileCollaboratorDTO.getCollaboratorsUuid().forEach(accountUuid -> {
             Account account = accountService.getAccountByUuid(accountUuid)
                     .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
-            collaborators.add(account);
+            boolean userAsFile = account.getUserFileCollaborator().stream().anyMatch(userFileCollaborator -> userFileCollaborator.getUserFile().getUuid().equals(fileUuid));
+            if (!userAsFile) {
+                collaborators.add(account);
+            }
         });
 
         UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        ConfirmationCollaboratorToken confirmationCollaboratorToken = confirmationCollaboratorTokenService.createConfirmationToken(accountUserLogged);
+        if (collaborators.size() != 0) {
+            ConfirmationCollaboratorToken confirmationCollaboratorToken = confirmationCollaboratorTokenService.createConfirmationToken(accountUserLogged);
 
-        userFile = userFileService.addCollaborators(userFile, collaborators, confirmationCollaboratorToken)
-                .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
+            userFile = userFileService.addCollaborators(userFile, collaborators, confirmationCollaboratorToken)
+                    .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
-        SimpleMailMessage confirmationMail = emailService.createConfirmationCollaboratorsEmail(accountUserLogged, confirmationCollaboratorToken);
+            SimpleMailMessage confirmationMail = emailService.createConfirmationCollaboratorsEmail(accountUserLogged, confirmationCollaboratorToken);
 
-        emailSenderService.sendEmail(confirmationMail);
+            emailSenderService.sendEmail(confirmationMail);
+        }
 
         return ok(userFile.toDTO());
     }

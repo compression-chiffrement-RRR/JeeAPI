@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface UserFileCollaboratorRepository extends JpaRepository<UserFileCollaborator, String> {
     List<UserFileCollaborator> findAllByConfirmationCollaboratorToken_Uuid(String tokenUuid);
+
+    void deleteByUuid(String s);
 }

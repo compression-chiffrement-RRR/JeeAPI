@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AccountFriendRepository extends JpaRepository<AccountFriend, Long> {
-    @Query("FROM AccountFriend af WHERE (af.account.uuid = ?1 OR af.friend.uuid = ?1) AND af.pending = ?2 AND af.ignore = ?3")
-    List<AccountFriend> findByAccountUuidOrFriendUuidAndPendingAndIgnore(String uuid, Boolean pending, Boolean ignore);
+public interface AccountFriendRepository extends JpaRepository<AccountFriend, Integer> {
+    @Query("FROM AccountFriend af WHERE (af.account.uuid = ?1 OR af.friend.uuid = ?1) AND af.pending = ?2 AND af.ignore = ?3 AND af.deleted = ?4")
+    List<AccountFriend> findByAccountUuidOrFriendUuidAndPendingAndIgnoreAndDeleted(String uuid, Boolean pending, Boolean ignore, Boolean deleted);
 
-    List<AccountFriend> findByFriendUuidAndPendingAndIgnore(String uuid, Boolean pending, Boolean ignore);
+    List<AccountFriend> findByFriendUuidAndPendingAndIgnoreAndDeleted(String uuid, Boolean pending, Boolean ignore, Boolean deleted);
 
-    Optional<AccountFriend> findFirstByAccountUuidAndFriendUuid(String accountUuid, String friendUuid);
+    Optional<AccountFriend> findFirstByAccountUuidAndFriendUuidAndDeleted(String accountUuid, String friendUuid, Boolean deleted);
 }
 

@@ -12,9 +12,7 @@ import com.cyphernet.api.storage.model.UserFile;
 import com.cyphernet.api.storage.model.UserFileAccountDTO;
 import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.model.UserFileInformationDTO;
-import com.cyphernet.api.storage.service.UserFileProcessService;
 import com.cyphernet.api.storage.service.UserFileService;
-import com.cyphernet.api.worker.service.WorkerTaskProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -35,18 +33,14 @@ import static org.springframework.http.ResponseEntity.ok;
 @RequestMapping("/api/file")
 public class UserFileController {
     private final UserFileService userFileService;
-    private final UserFileProcessService userFileProcessService;
     private final AccountService accountService;
     private final AmazonClient amazonClient;
-    private final WorkerTaskProcessService workerTaskProcessService;
 
     @Autowired
-    public UserFileController(UserFileService userFileService, UserFileProcessService userFileProcessService, AccountService accountService, AmazonClient amazonClient, WorkerTaskProcessService workerTaskProcessService) {
+    public UserFileController(UserFileService userFileService, AccountService accountService, AmazonClient amazonClient) {
         this.userFileService = userFileService;
-        this.userFileProcessService = userFileProcessService;
         this.accountService = accountService;
         this.amazonClient = amazonClient;
-        this.workerTaskProcessService = workerTaskProcessService;
     }
 
     @Secured("ROLE_USER")

@@ -36,6 +36,9 @@ public class AccountFriend {
     @Column
     private Boolean ignore = false;
 
+    @Column
+    private Boolean deleted = false;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate

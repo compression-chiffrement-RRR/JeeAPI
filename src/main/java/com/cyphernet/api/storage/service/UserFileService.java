@@ -142,7 +142,12 @@ public class UserFileService {
             return Optional.empty();
         }
 
-        userFileCollaboratorRepository.delete(userFileCollaboratorsToRemove.get());
+
+        UserFileCollaborator fileCollaborator = userFileCollaboratorsToRemove.get();
+        userFile.getUserFileCollaborator().remove(fileCollaborator);
+
+        userFileRepository.save(userFile);
+        userFileCollaboratorRepository.deleteByUuid(fileCollaborator.getUuid());
 
         return Optional.of(userFile);
     }

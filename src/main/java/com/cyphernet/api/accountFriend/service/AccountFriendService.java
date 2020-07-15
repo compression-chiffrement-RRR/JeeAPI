@@ -1,6 +1,7 @@
 package com.cyphernet.api.accountFriend.service;
 
 import com.cyphernet.api.account.model.Account;
+import com.cyphernet.api.account.repository.AccountRepository;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.accountFriend.model.AccountFriend;
 import com.cyphernet.api.accountFriend.repository.AccountFriendRepository;
@@ -16,20 +17,22 @@ import java.util.Optional;
 public class AccountFriendService {
 
     private final AccountFriendRepository accountFriendRepository;
+    private final AccountRepository accountRepository;
     private final AccountService accountService;
 
     @Autowired
-    public AccountFriendService(AccountFriendRepository accountFriendRepository, AccountService accountService) {
+    public AccountFriendService(AccountFriendRepository accountFriendRepository, AccountRepository accountRepository, AccountService accountService) {
         this.accountFriendRepository = accountFriendRepository;
+        this.accountRepository = accountRepository;
         this.accountService = accountService;
     }
 
     public List<AccountFriend> getNotPendingFriends(Account account) {
-        return accountFriendRepository.findByAccountUuidOrFriendUuidAndPendingAndIgnore(account.getUuid(), false, false);
+        return accountFriendRepository.findByAccountUuidOrFriendUuidAndPendingAndIgnoreAndDeleted(account.getUuid(), false, false, false);
     }
 
     public List<AccountFriend> getPendingFriendsRequest(Account account) {
-        return accountFriendRepository.findByFriendUuidAndPendingAndIgnore(account.getUuid(), true, false);
+        return accountFriendRepository.findByFriendUuidAndPendingAndIgnoreAndDeleted(account.getUuid(), true, false, false);
     }
 
     @Transactional
@@ -38,10 +41,19 @@ public class AccountFriendService {
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
         Account friend = accountService.getAccountByUuid(friendUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(accountUuid, friendUuid, false);
+
         if (optionalAccountFriend.isPresent()) {
             return optionalAccountFriend.get();
         }
+
+        optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(friendUuid, accountUuid, false);
+
+        if (optionalAccountFriend.isPresent()) {
+            return optionalAccountFriend.get();
+        }
+
         AccountFriend accountFriend = new AccountFriend()
                 .setAccount(account)
                 .setFriend(friend);
@@ -49,7 +61,7 @@ public class AccountFriendService {
     }
 
     public Optional<AccountFriend> confirmFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(friendUuid, accountUuid, false);
 
         if (optionalAccountFriend.isEmpty()) {
             return Optional.empty();
@@ -62,7 +74,7 @@ public class AccountFriendService {
     }
 
     public Optional<AccountFriend> ignoreFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(friendUuid, accountUuid, false);
 
         if (optionalAccountFriend.isEmpty()) {
             return Optional.empty();
@@ -74,17 +86,19 @@ public class AccountFriendService {
         return Optional.of(accountFriendRepository.save(accountFriend));
     }
 
+    @Transactional
     public void deleteFriend(String accountUuid, String friendUuid) {
-        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(accountUuid, friendUuid);
+        Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(accountUuid, friendUuid, false);
 
         if (optionalAccountFriend.isEmpty()) {
-            optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuid(friendUuid, accountUuid);
+            optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(friendUuid, accountUuid, false);
             if (optionalAccountFriend.isEmpty()) {
                 return;
             }
         }
 
         AccountFriend accountFriend = optionalAccountFriend.get();
-        accountFriendRepository.delete(accountFriend);
+        accountFriend.setDeleted(true);
+        accountFriendRepository.save(accountFriend);
     }
 }

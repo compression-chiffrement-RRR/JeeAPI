@@ -120,7 +120,7 @@ public class AccountService implements UserDetailsService {
         }
         Account account = optionalUser.get();
 
-        List<UserFileCollaborator> userFileCollaborator = account.getUserFileCollaborator();
+        List<UserFileCollaborator> userFileCollaborator = account.getUserFileCollaborator().stream().filter(fileCollaboNazi -> !fileCollaboNazi.getPending()).collect(Collectors.toList());
 
         List<UserFile> userFiles = userFileCollaborator.stream().map(UserFileCollaborator::getUserFile).collect(Collectors.toList());
 
