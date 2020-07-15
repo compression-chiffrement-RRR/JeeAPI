@@ -142,7 +142,6 @@ public class UserFileService {
             return Optional.empty();
         }
 
-
         UserFileCollaborator fileCollaborator = userFileCollaboratorsToRemove.get();
         userFile.getUserFileCollaborator().remove(fileCollaborator);
 

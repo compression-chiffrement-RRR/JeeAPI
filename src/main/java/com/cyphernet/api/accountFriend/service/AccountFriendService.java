@@ -1,11 +1,12 @@
 package com.cyphernet.api.accountFriend.service;
 
 import com.cyphernet.api.account.model.Account;
-import com.cyphernet.api.account.repository.AccountRepository;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.accountFriend.model.AccountFriend;
 import com.cyphernet.api.accountFriend.repository.AccountFriendRepository;
 import com.cyphernet.api.exception.AccountNotFoundException;
+import com.cyphernet.api.storage.model.UserFile;
+import com.cyphernet.api.storage.service.UserFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +18,14 @@ import java.util.Optional;
 public class AccountFriendService {
 
     private final AccountFriendRepository accountFriendRepository;
-    private final AccountRepository accountRepository;
     private final AccountService accountService;
+    private final UserFileService userFileService;
 
     @Autowired
-    public AccountFriendService(AccountFriendRepository accountFriendRepository, AccountRepository accountRepository, AccountService accountService) {
+    public AccountFriendService(AccountFriendRepository accountFriendRepository, AccountService accountService, UserFileService userFileService) {
         this.accountFriendRepository = accountFriendRepository;
-        this.accountRepository = accountRepository;
         this.accountService = accountService;
+        this.userFileService = userFileService;
     }
 
     public List<AccountFriend> getNotPendingFriends(Account account) {
@@ -100,5 +101,22 @@ public class AccountFriendService {
         AccountFriend accountFriend = optionalAccountFriend.get();
         accountFriend.setDeleted(true);
         accountFriendRepository.save(accountFriend);
+
+        Account account = accountFriend.getAccount();
+        removeUserFileCollaboratorWhenRemoveFriend(friendUuid, account);
+
+        Account friend = accountFriend.getFriend();
+        removeUserFileCollaboratorWhenRemoveFriend(accountUuid, friend);
+    }
+
+    private void removeUserFileCollaboratorWhenRemoveFriend(String accountUuid, Account friend) {
+        friend.getUserFileCollaborator()
+                .forEach(userFileCollaborator -> {
+                    UserFile userFile = userFileCollaborator.getUserFile();
+                    Account accountOfFile = userFile.getAccount();
+                    if (accountOfFile.getUuid().equals(accountUuid)) {
+                        userFileService.removeCollaborator(userFile.getUuid(), accountUuid, friend);
+                    }
+                });
     }
 }
