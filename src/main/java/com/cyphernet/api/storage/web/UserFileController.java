@@ -68,7 +68,7 @@ public class UserFileController {
     @Secured("ROLE_USER")
     @GetMapping("/download/{fileUuid}")
     public ResponseEntity<ByteArrayResource> getDownloadFilesProcessed(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) throws FileNotRetrieveException, FileNotTreatedException {
-        UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
+        UserFile userFile = userFileService.getUserFileSharedOrOwned(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
         if (!userFile.getIsTreated()) {

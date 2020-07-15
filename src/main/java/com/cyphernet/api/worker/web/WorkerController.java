@@ -167,7 +167,7 @@ public class WorkerController {
         Account account = accountService.getAccountByUuid(currentAccount.getUuid())
                 .orElseThrow(() -> new AccountNotFoundException("uuid", currentAccount.getUuid()));
 
-        UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
+        UserFile userFile = userFileService.getUserFileSharedOrOwned(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
 
         if (userFile.getIsTemporary()) {

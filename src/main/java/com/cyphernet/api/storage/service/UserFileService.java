@@ -33,6 +33,24 @@ public class UserFileService {
         return userFileRepository.findByUuidAndAccountUuid(fileUuid, accountUuid);
     }
 
+    @Transactional
+    public Optional<UserFile> getUserFileSharedOrOwned(String fileUuid, String accountUuid) {
+        Optional<UserFile> userFileOptional = userFileRepository.findById(fileUuid);
+
+        if (userFileOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UserFile userFile = userFileOptional.get();
+        if (userFile.getAccount().getUuid().equals(accountUuid)) {
+            return userFileOptional;
+        }
+        if (userFile.getUserFileCollaborator().stream().anyMatch(userFileCollaborator -> userFileCollaborator.getAccount().getUuid().equals(accountUuid))) {
+            return userFileOptional;
+        }
+        return Optional.empty();
+    }
+
     public List<UserFile> getUserFiles() {
         return userFileRepository.findAll();
     }
