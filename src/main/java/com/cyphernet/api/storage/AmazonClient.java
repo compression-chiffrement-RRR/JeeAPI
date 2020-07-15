@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
@@ -47,20 +45,14 @@ public class AmazonClient {
                 .build();
     }
 
-    private File convertMultiPartToFile(MultipartFile file) throws IOException {
-        File convFile = new File(file.getOriginalFilename());
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
-        return convFile;
-    }
-
     public String generateFileName() {
         return UUID.randomUUID().toString();
     }
 
-    private void uploadFileTos3bucket(String fileName, File file) {
-        s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
+    private void uploadFileTos3bucket(String fileName, MultipartFile file) throws IOException {
+        ObjectMetadata objMetadata = new ObjectMetadata();
+        objMetadata.setContentLength(file.getSize());
+        s3client.putObject(new PutObjectRequest(bucketName, fileName, file.getInputStream(), objMetadata)
                 .withCannedAcl(CannedAccessControlList.Private));
     }
 
@@ -86,10 +78,8 @@ public class AmazonClient {
     public String uploadFile(MultipartFile multipartFile, String fileName) throws IOException {
         String fileUrl = "";
         try {
-            File file = convertMultiPartToFile(multipartFile);
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
-            uploadFileTos3bucket(fileName, file);
-            file.delete();
+            uploadFileTos3bucket(fileName, multipartFile);
         } catch (Exception e) {
             throw e;
         }
