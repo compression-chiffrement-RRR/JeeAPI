@@ -41,7 +41,7 @@ public class AccountFriendService {
         Account account = accountService.getAccountByUuid(accountUuid)
                 .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
         Account friend = accountService.getAccountByUuid(friendUuid)
-                .orElseThrow(() -> new AccountNotFoundException("uuid", accountUuid));
+                .orElseThrow(() -> new AccountNotFoundException("uuid", friendUuid));
 
         Optional<AccountFriend> optionalAccountFriend = accountFriendRepository.findFirstByAccountUuidAndFriendUuidAndDeleted(accountUuid, friendUuid, false);
 
