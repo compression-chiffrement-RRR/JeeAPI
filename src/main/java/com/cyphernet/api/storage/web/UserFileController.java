@@ -50,7 +50,7 @@ public class UserFileController {
     @GetMapping("/{fileUuid}")
     @Transactional
     public ResponseEntity<UserFileInformationDTO> getFile(@PathVariable String fileUuid, @AuthenticationPrincipal AccountDetail currentAccount) {
-        UserFile userFile = userFileService.getUserFileByUuidAndAccountUuid(fileUuid, currentAccount.getUuid())
+        UserFile userFile = userFileService.getUserFileSharedOrOwned(fileUuid, currentAccount.getUuid())
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));
         return ok(userFile.toInformationDTO());
     }
