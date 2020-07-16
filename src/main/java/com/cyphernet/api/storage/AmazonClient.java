@@ -85,12 +85,12 @@ public class AmazonClient {
         return fileUrl;
     }
 
-    public S3ObjectInputStream download(String key) throws IOException {
+    public S3Object download(String key) throws IOException {
         GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
 
         S3Object s3Object = s3client.getObject(getObjectRequest);
 
-        return s3Object.getObjectContent();
+        return s3Object;
     }
 
     public void deleteFileFromS3Bucket(String fileName) throws SdkClientException {

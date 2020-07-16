@@ -33,7 +33,6 @@ public class DownloadFileInterceptor implements HandlerInterceptor {
         Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
         String fileUuid = (String) pathVariables.get("fileUuid");
-        System.out.println("interceptor :" + fileUuid);
 
         UserFile userFile = userFileService.getUserFileByUuid(fileUuid)
                 .orElseThrow(() -> new UserFileNotFoundException("uuid", fileUuid));

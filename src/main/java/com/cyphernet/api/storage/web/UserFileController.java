@@ -2,7 +2,7 @@ package com.cyphernet.api.storage.web;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3Object;
 import com.cyphernet.api.account.model.AccountDetail;
 import com.cyphernet.api.account.service.AccountService;
 import com.cyphernet.api.exception.FileNotRetrieveException;
@@ -14,7 +14,6 @@ import com.cyphernet.api.storage.model.UserFileAccountDTO;
 import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.model.UserFileInformationDTO;
 import com.cyphernet.api.storage.service.UserFileService;
-import org.apache.http.Header;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -79,10 +78,10 @@ public class UserFileController {
             throw new FileNotTreatedException();
         }
 
-        S3ObjectInputStream inputStream;
+        S3Object s3Object;
 
         try {
-            inputStream = amazonClient.download(userFile.getFileNamePrivate());
+            s3Object = amazonClient.download(userFile.getFileNamePrivate());
         } catch (IOException | AmazonS3Exception e) {
             e.printStackTrace();
             throw new FileNotRetrieveException();
@@ -91,13 +90,11 @@ public class UserFileController {
         String fileName = URLEncoder.encode(userFile.getFileNamePublic(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
 
-        Header headerContentLength = inputStream.getHttpRequest().getHeaders(HttpHeaders.CONTENT_LENGTH)[0];
-
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", fileName));
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        response.setHeader(HttpHeaders.CONTENT_LENGTH, headerContentLength.getValue());
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, s3Object.getObjectMetadata().getContentLength() + "");
 
-        inputStream.transferTo(response.getOutputStream());
+        s3Object.getObjectContent().transferTo(response.getOutputStream());
     }
 
     @Secured("ROLE_USER")
