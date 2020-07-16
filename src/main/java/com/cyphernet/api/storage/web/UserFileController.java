@@ -14,6 +14,7 @@ import com.cyphernet.api.storage.model.UserFileAccountDTO;
 import com.cyphernet.api.storage.model.UserFileDTO;
 import com.cyphernet.api.storage.model.UserFileInformationDTO;
 import com.cyphernet.api.storage.service.UserFileService;
+import org.apache.http.Header;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -90,8 +91,11 @@ public class UserFileController {
         String fileName = URLEncoder.encode(userFile.getFileNamePublic(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
 
+        Header headerContentLength = inputStream.getHttpRequest().getHeaders(HttpHeaders.CONTENT_LENGTH)[0];
+
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", fileName));
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, headerContentLength.getValue());
 
         inputStream.transferTo(response.getOutputStream());
     }
